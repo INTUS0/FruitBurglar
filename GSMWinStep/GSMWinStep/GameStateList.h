@@ -28,7 +28,8 @@ enum
 	GS_L2,              // Level2
 	GS_NUM,             // Total Number
 	GS_Restart,			// Restart
-	GS_Quit				// Quit
+	GS_Quit	,			// Quit
+	GS_MENU         //Menu
 };
 
 int Current, Previous, Next;  // ״ָ̬ʾ��

@@ -9,6 +9,7 @@
 #include "System.h"
 #include "Level1.h"
 #include "Level2.h"
+#include "Menu.h"
 
 //------------------------------------------------------------------------------
 // Private Consts:
@@ -66,6 +67,16 @@ void GSM_Update(int level)
 				pDraw = Draw2;
 				pFree = Free2;
 				pUnload = Unload2;
+				break;
+			}
+			case GS_MENU:
+			{
+				pLoad = LoadMenuByIntUs;
+				pIni = IniMenu;
+				pUpdate = UpdateMenu;
+				pDraw = DrawMenu;
+				pFree = FreeMenu;
+				pUnload = UnloadMenu;
 				break;
 			}
 	}

@@ -42,7 +42,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	System_Initialize(hInstance, nCmdShow);
 
 	// GSM Initialize
-	GSM_Initialize(GS_L1);
+	GSM_Initialize(GS_MENU);
 
 	// Game Flow
 	while(Current != GS_Quit)
@@ -81,7 +81,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	// System Exit
-	system("pause");
+	//system("pause");
 	System_Exit();
 
 	return 0;
