@@ -127,5 +127,8 @@
     <Image Include="..\..\..\游戏c文件\GProj_Asteroid\GProj_Asteroid\PlanetTexture.png">
       <Filter>Header Files</Filter>
     </Image>
+    <Image Include="BackGround.PNG">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

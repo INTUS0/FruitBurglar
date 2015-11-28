@@ -77,6 +77,9 @@ void Update1(void)
 		Next = GS_Quit;
 	if (KeyPressed[Key2])
 		Next = GS_L2;
+	if (KeyPressed[KeyMenu])
+		Next = GS_MENU;
+
 
 	// 对象移动
 	if (KeyPressed[KeyUp])
@@ -89,7 +92,8 @@ void Update1(void)
 	else
 		if (KeyPressed[KeyRight])
 			obj1X += 0.5f;
-
+	
+	
 	// 输入重置
 	Input_Initialize();
 

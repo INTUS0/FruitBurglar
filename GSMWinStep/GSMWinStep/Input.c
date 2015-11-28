@@ -17,6 +17,7 @@ enum{
 	KeyDown,
 	KeyLeft,
 	KeyRight,
+	KeyMenu,
 	KeyNUM    // 总放在最后一个
 };
 boolean KeyPressed[KeyNUM];
@@ -113,6 +114,7 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			KeyPressed[Key2] = TRUE;
 			fprintf(fp, "Input:2\n");
 		}
+		
 		if (wParam == VK_UP)
 			KeyPressed[KeyUp] = TRUE;
 		if (wParam == VK_DOWN)
@@ -121,6 +123,9 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			KeyPressed[KeyLeft] = TRUE;
 		if (wParam == VK_RIGHT)
 			KeyPressed[KeyRight] = TRUE;
+		if (wParam == 'M')
+			KeyPressed[KeyMenu] = TRUE;
+
 		break;
 
 		// 窗口发生移动

@@ -45,11 +45,11 @@ void Load2(void)
 	AEGfxMeshStart();
 	AEGfxTriAdd(
 		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 0.5f, 1.0f,
 		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		30.0f, -30.0f, 0x00FFFFFF, 0.5f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 0.5f, 0.0f,
 		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pMesh2 = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pMesh2, "Failed to create mesh 2!!");
@@ -82,6 +82,8 @@ void Update2(void)
 		Next = GS_Quit;
 	if (KeyPressed[Key1])
 		Next = GS_L1;
+	if (KeyPressed[KeyMenu])
+		Next = GS_MENU;
 
 	//  ‰»Î÷ÿ÷√
 	Input_Initialize();

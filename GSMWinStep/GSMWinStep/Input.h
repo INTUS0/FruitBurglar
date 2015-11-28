@@ -19,6 +19,7 @@ enum{
 	KeyDown,
 	KeyLeft,
 	KeyRight,
+	KeyMenu,
 	KeyNUM    // 总放在最后一个
 };
 boolean KeyPressed[KeyNUM];
