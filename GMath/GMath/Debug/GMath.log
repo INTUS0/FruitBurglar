@@ -1,24 +1,54 @@
-﻿Build started 2015/11/28 21:40:22.
-     1>Project "C:\游戏c文件\GMath\GMath\GMath.vcxproj" on node 2 (Build target(s)).
+﻿Build started 2015/11/29 23:10:46.
+     1>Project "C:\FruitBurglar2\GMath\GMath\GMath.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Vector2D.c
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt Math2D.c Matrix2D.c SmokeTest.c Vector2D.c
          Vector2D.c
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(27): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(28): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(84): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(99): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(120): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(121): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(128): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\游戏c文件\gmath\gmath\vector2d.c(129): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(27): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(28): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(84): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(99): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(120): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(121): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(128): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\vector2d.c(129): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         SmokeTest.c
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(23): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(24): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(36): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(220): warning C4244: 'function' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(244): warning C4244: 'function' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\smoketest.c(260): warning C4244: 'function' : conversion from 'double' to 'float', possible loss of data
+         Matrix2D.c
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(81): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(82): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(83): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(84): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(95): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(96): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(97): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\matrix2d.c(98): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         Math2D.c
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(24): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(25): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(26): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(27): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(64): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(65): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(66): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(67): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(69): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(70): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(71): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\fruitburglar2\gmath\gmath\math2d.c(72): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+         Generating Code...
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\游戏c文件\GMath\Debug\GMath.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\游戏c文件\GMath\Debug\GMath.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\游戏c文件\GMath\Debug\GMath.lib" /MACHINE:X86 Debug\Math2D.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\FruitBurglar2\GMath\Debug\GMath.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\FruitBurglar2\GMath\Debug\GMath.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\FruitBurglar2\GMath\Debug\GMath.lib" /MACHINE:X86 Debug\Math2D.obj
          Debug\Matrix2D.obj
          Debug\SmokeTest.obj
          Debug\Vector2D.obj
-         GMath.vcxproj -> C:\游戏c文件\GMath\Debug\GMath.exe
-     1>Done Building Project "C:\游戏c文件\GMath\GMath\GMath.vcxproj" (Build target(s)).
+         GMath.vcxproj -> C:\FruitBurglar2\GMath\Debug\GMath.exe
+     1>Done Building Project "C:\FruitBurglar2\GMath\GMath\GMath.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.28
+Time Elapsed 00:00:10.30

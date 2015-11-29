@@ -39,9 +39,9 @@ void Matrix2DConcat(Matrix2D *pResult, Matrix2D *pMtx0, Matrix2D *pMtx1)
 	int i = 0, j = 0;
 	for (i = 0; i < 3; i++){
 		for (j = 0; j < 3; j++){
-			pResult->m[i][j] = pMtx0->m[i][0] * pMtx1->m[0][i] +
-				pMtx0->m[i][1] * pMtx1->m[1][i] +
-				pMtx0->m[i][2] * pMtx1->m[2][i];
+			pResult->m[i][j] = pMtx0->m[i][0] * pMtx1->m[0][j] +
+				pMtx0->m[i][1] * pMtx1->m[1][j] +
+				pMtx0->m[i][2] * pMtx1->m[2][j];
 		}
 	}
 }
