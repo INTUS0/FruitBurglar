@@ -1,11 +1,12 @@
 /* Project:		GSMWinStep
 File Name:	Input.c
-Author(former):		刘芳
-Author KY
+Author(former):	刘芳
+Author Int us
 Date:		2015-9-15
 Purpose:		输入模块  */
 
 #include "System.h"
+
 
 //新加全局变量
 enum{
@@ -17,7 +18,9 @@ enum{
 	KeyDown,
 	KeyLeft,
 	KeyRight,
-	KeyMenu,
+	KeyMenu,//菜单键
+	KeyLeftBottom,//鼠标左键
+	KeyRightBottom,//鼠标右键，
 	KeyNUM    // 总放在最后一个
 };
 boolean KeyPressed[KeyNUM];
@@ -69,11 +72,22 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 		break;
 
+	case WM_RBUTTONDOWN:
+		if (wParam == VK_RBUTTON)
+			KeyPressed[KeyRightBottom] = TRUE;
+		break;
+
 	case WM_LBUTTONDOWN:
 		//GS_Running = 0;
+		//鼠标键
+		if (wParam == VK_LBUTTON)
+			KeyPressed[KeyLeftBottom] = TRUE;
+		
 		break;
 
 	case WM_MOUSEMOVE:
+		
+
 		break;
 
 		// 重绘
@@ -115,16 +129,18 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			fprintf(fp, "Input:2\n");
 		}
 		
-		if (wParam == VK_UP)
+		if (wParam == VK_UP|| wParam == 'W')
 			KeyPressed[KeyUp] = TRUE;
-		if (wParam == VK_DOWN)
+		if (wParam == VK_DOWN || wParam =='S' )
 			KeyPressed[KeyDown] = TRUE;
-		if (wParam == VK_LEFT)
+		if (wParam == VK_LEFT || wParam == 'A')
 			KeyPressed[KeyLeft] = TRUE;
-		if (wParam == VK_RIGHT)
+		if (wParam == VK_RIGHT || wParam == 'D')
 			KeyPressed[KeyRight] = TRUE;
 		if (wParam == 'M')
 			KeyPressed[KeyMenu] = TRUE;
+
+		
 
 		break;
 

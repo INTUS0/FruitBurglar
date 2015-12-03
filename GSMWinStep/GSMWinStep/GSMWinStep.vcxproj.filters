@@ -130,5 +130,8 @@
     <Image Include="BackGround.PNG">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="MonkeyStand.png">
+      <Filter>Header Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

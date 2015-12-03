@@ -27,6 +27,7 @@ Purpose:		关卡1  */
 //------------------------------------------------------------------------------
 // Private Variables:
 //------------------------------------------------------------------------------
+static AEGfxTexture *pTex1;		// 对象1的纹理
 static AEGfxVertexList*	pMesh1;				// 对象1的网格(mesh)模型
 static float obj1X, obj1Y;		// 对象1的位置
 //------------------------------------------------------------------------------
@@ -42,11 +43,18 @@ void Load1(void)
 	// 开始添加对象1
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-25.5f, -25.5f, 0xFFFF0000, 0.0f, 0.0f,
-		25.5f, 0.0f, 0x00FF0000, 0.0f, 0.0f,
-		-25.5f, 25.5f, 0xFFFFFF00, 0.0f, 0.0f);
+		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		
 	pMesh1 = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pMesh1, "Failed to create mesh 1!!");
+
+	pTex1 = AEGfxTextureLoad("MonkeyStand.png");//载入纹理
 
 	// 签到
 	fprintf(fp, "Level1:Load\n");
@@ -82,16 +90,17 @@ void Update1(void)
 
 
 	// 对象移动
-	if (KeyPressed[KeyUp])
-		obj1Y += 0.5f;
+	if (KeyPressed[KeyUp] ||KeyPressed[KeyLeftBottom])
+		obj1Y += 2.0f;
 	else
-		if (KeyPressed[KeyDown])
-			obj1Y -= 0.5f;
+		if (KeyPressed[KeyDown] || KeyPressed[KeyRightBottom])
+			obj1Y -= 2.0f;
+			
 	if (KeyPressed[KeyLeft])
-		obj1X -= 0.5f;
+		obj1X -= 2.0f;
 	else
 		if (KeyPressed[KeyRight])
-			obj1X += 0.5f;
+			obj1X += 2.0f;
 	
 	
 	// 输入重置
@@ -104,10 +113,10 @@ void Update1(void)
 void Draw1(void)
 {
 	// 画对象1
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 	AEGfxSetPosition(obj1X, obj1Y);
-	AEGfxTextureSet(NULL, 0, 0);
-	AEGfxSetTransparency(1);
+	AEGfxTextureSet(pTex1, obj1X, obj1Y);//设置猴子位置
+	AEGfxSetTransparency(1.0f);
 	AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
 	AEGfxMeshDraw(pMesh1, AE_GFX_MDM_TRIANGLES);
 
@@ -124,6 +133,7 @@ void Free1(void)
 void Unload1(void)
 {
 	AEGfxMeshFree(pMesh1);		// 注销创建的对象
+	AEGfxTextureUnload(pTex1); //销毁猴子
 
 	// 签到
 	fprintf(fp, "Level1:Unload\n");
