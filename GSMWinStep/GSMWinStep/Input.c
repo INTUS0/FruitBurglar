@@ -74,7 +74,12 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_RBUTTONDOWN:
 		if (wParam == VK_RBUTTON)
+		{
 			KeyPressed[KeyRightBottom] = TRUE;
+			
+		}
+			
+			
 		break;
 
 	case WM_LBUTTONDOWN:
