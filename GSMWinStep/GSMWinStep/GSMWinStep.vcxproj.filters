@@ -96,26 +96,26 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameStateManager.c">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.c">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Level1.c">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Level2.c">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="System.c">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="System.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Level2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Menu.c">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Level1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateManager.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

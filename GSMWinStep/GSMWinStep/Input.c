@@ -6,24 +6,9 @@ Date:		2015-9-15
 Purpose:		输入模块  */
 
 #include "System.h"
+#include "Input.h"
 
 
-//新加全局变量
-enum{
-	KeyR,
-	KeyESC,
-	Key1,
-	Key2,
-	KeyUp,
-	KeyDown,
-	KeyLeft,
-	KeyRight,
-	KeyMenu,//菜单键
-	KeyLeftBottom,//鼠标左键
-	KeyRightBottom,//鼠标右键，
-	KeyNUM    // 总放在最后一个
-};
-boolean KeyPressed[KeyNUM];
 
 //新增函数
 void Input_Initialize()
@@ -76,7 +61,10 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_RBUTTON)
 		{
 			KeyPressed[KeyRightBottom] = TRUE;
-			
+			p.x = LOWORD(lParam) - 400;    //获取鼠标位置x坐标信息
+			p.y = -HIWORD(lParam) + 300;    //获取鼠标位置y坐标信息
+			posX = p.x;
+			posY = p.y;
 		}
 			
 			

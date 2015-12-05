@@ -9,7 +9,11 @@ Purpose:		输入模块  */
 #ifndef _Input
 #define _Input
 
+
 //新加全局变量
+float posX, posY; //为了获取鼠标位置
+POINTS p;
+
 enum{
 	KeyR,
 	KeyESC,

@@ -13,17 +13,64 @@ Purpose:		关卡1  */
 #include "Input.h"
 
 
-
+
+
 //------------------------------------------------------------------------------
 // Private Consts:
 //------------------------------------------------------------------------------
-#define GAME_OBJ_BASE_NUM_MAX	32			// 对象类型（对象基类）数目上限#define GAME_OBJ_NUM_MAX		2048		// 对象数目上限
+#define GAME_OBJ_BASE_NUM_MAX	32			// 对象类型（对象基类）数目上限
+#define GAME_OBJ_NUM_MAX		2048		// 对象数目上限
 
 //------------------------------------------------------------------------------
 // Private Structures:
 //------------------------------------------------------------------------------
 
-//游戏对象基类typedef struct{	unsigned long		type;		// 游戏对象类型	AEGfxVertexList*	pMesh;		// 形状}GameObjBase;//游戏对象类typedef struct{	GameObjBase*       pObject;     //指向基类	unsigned long      flag;        //活动标志	float              scale;       //尺寸	AEVec2             posCurr;     //当前位置	AEVec2             velCurr;     //当前速度	float              dirCurr;     //当前方向	AEMtx33            transform;   //变换矩阵，每一帧都需要为一个对象计算}GameObj;//private variables// 游戏对象基类（类型）列表static GameObjBase		sGameObjBaseList[GAME_OBJ_BASE_NUM_MAX];	// 该数组中的元素是游戏对象基类的实例：形状和类型static unsigned long	sGameObjBaseNum;							// 已定义的游戏对象基类// 游戏对象列表static GameObj			sGameObjList[GAME_OBJ_NUM_MAX];				// 该数组中的元素是游戏对象的实例static unsigned long	sGameObjNum;								// 游戏对象的个数//小盗对象,playerstatic GameObj* Burglar;//小盗血量static int BurglarBlood;//水果数量static int FruitNumber;//狗数量static int DogNumber;//农场主血量static int BossBlood;
+//游戏对象基类
+typedef struct
+{
+	unsigned long		type;		// 游戏对象类型
+	AEGfxVertexList*	pMesh;		// 形状
+}GameObjBase;
+
+//游戏对象类
+typedef struct
+{
+	GameObjBase*       pObject;     //指向基类
+	unsigned long      flag;        //活动标志
+	float              scale;       //尺寸
+	AEVec2             posCurr;     //当前位置
+	AEVec2             velCurr;     //当前速度
+	float              dirCurr;     //当前方向
+
+	AEMtx33            transform;   //变换矩阵，每一帧都需要为一个对象计算
+}GameObj;
+
+
+//private variables
+// 游戏对象基类（类型）列表
+
+static GameObjBase		sGameObjBaseList[GAME_OBJ_BASE_NUM_MAX];	// 该数组中的元素是游戏对象基类的实例：形状和类型
+static unsigned long	sGameObjBaseNum;							// 已定义的游戏对象基类
+
+// 游戏对象列表
+static GameObj			sGameObjList[GAME_OBJ_NUM_MAX];				// 该数组中的元素是游戏对象的实例
+static unsigned long	sGameObjNum;								// 游戏对象的个数
+
+//小盗对象,player
+static GameObj* Burglar;
+
+//小盗血量
+static int BurglarBlood;
+
+//水果数量
+static int FruitNumber;
+
+//狗数量
+static int DogNumber;
+
+//农场主血量
+static int BossBlood;
+
 
 //------------------------------------------------------------------------------
 // Private Variables monkey:
@@ -194,7 +241,7 @@ void Update1(void)
 	if (KeyPressed[KeyUp] ||KeyPressed[KeyLeftBottom])
 		obj1Y += 2.0f;
 	else
-		if (KeyPressed[KeyDown] || KeyPressed[KeyRightBottom])
+		if (KeyPressed[KeyDown])
 			obj1Y -= 2.0f;
 			
 	if (KeyPressed[KeyLeft])
@@ -205,7 +252,8 @@ void Update1(void)
 
 	if (KeyPressed[KeyRightBottom])
 	{
-		
+		obj1X = posX;
+		obj1Y = posY;
 	}
 	
 	// 输入重置
