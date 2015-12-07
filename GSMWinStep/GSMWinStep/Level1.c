@@ -395,6 +395,24 @@ void Update1(void)
 	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
 	{
 		GameObj* pObj = sGameObjList + i;
+		if (pObj->flag)
+		{
+			if (i % 2)
+			{
+				pObj->velCurr.x = 0.05;
+				pObj->velCurr.y = -0.05;
+			}
+			else
+			{
+				pObj->velCurr.x = -0.05;
+				pObj->velCurr.y = -0.05;
+			}
+
+
+			
+			pObj->posCurr.x += pObj->velCurr.x;
+			pObj->posCurr.y += pObj->velCurr.y;
+		}
 		if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 20, 20)&&pObj->flag )
 			gameObjDestroy(Burglar);
 	}
