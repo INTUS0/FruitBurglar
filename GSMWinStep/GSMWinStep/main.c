@@ -47,37 +47,37 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// Game Flow
 	while(Current != GS_Quit)
 	{
-	if(Current == GS_Restart)
-	{
-	Current = Previous;
-	Next = Previous;
-	}
-	else
-	{
-	// GSM Update
-	GSM_Update(Current);
-	pLoad();
-	}
+	   if(Current == GS_Restart)
+	   {
+	       Current = Previous;
+	       Next = Previous;
+	   }
+	  else
+	  {
+	    // GSM Update
+	    GSM_Update(Current);
+	    pLoad();
+	  }
 
-	pIni();
+	 pIni();
 
-	// Game Loop
+	  // Game Loop
 	while(Current == Next)
 	{
-	AESysFrameStart();
-	//Input_Handle();  回调函数
-	pUpdate();
-	pDraw();
-	AESysFrameEnd();
-	}
+	    AESysFrameStart();
+	   //Input_Handle();  回调函数
+	   pUpdate();
+	   pDraw();
+	   AESysFrameEnd();
+	 }
 
-	pFree();
+	 pFree();
 
 	if(Next != GS_Restart)
-	pUnload();
+	    pUnload();
 
-	Previous = Current;
-	Current = Next;
+	    Previous = Current;
+	    Current = Next;
 	}
 
 	// System Exit

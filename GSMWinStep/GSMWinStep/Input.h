@@ -12,7 +12,7 @@ Purpose:		输入模块  */
 
 //新加全局变量
 float posX, posY; //为了获取鼠标位置
-POINTS p;
+POINTS p;//鼠标获取的临时位置
 
 enum{
 	KeyR,

@@ -53,7 +53,7 @@ int System_Initialize(HINSTANCE hInstance, int nCmdShow)
 	if (0 == AESysInit(&sysInitInfo))
 		return -1;
 	AESysReset();
-	AESysSetWindowTitle("你们的游戏名称");
+	AESysSetWindowTitle("FruitBurglar-An INT US Product");
 
 	// 打开签到表
 	if ((fp = fopen("Output.txt", "w")) == NULL)

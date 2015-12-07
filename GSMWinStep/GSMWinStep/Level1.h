@@ -14,12 +14,21 @@
 //------------------------------------------------------------------------------
 // Public Consts:
 //------------------------------------------------------------------------------
+
 /*
-enum TYPE{	//游戏对象列表	TYPE_BURGLAR = 0,	TYPE_STONE,	TYPE_TRAP,	TYPE_BOSS,	TYPE_DOG,	TYPE_STRAWBERRY,	TYPE_WATERMELON,	TYPE_NUM};
+enum OBJ_TYPE{	//游戏对象列表	TYPE_BURGLAR = 0,	TYPE_STONE,	TYPE_TRAP,	TYPE_BOSS,	TYPE_DOG,	TYPE_STRAWBERRY,	TYPE_WATERMELON,	TYPE_NUM};
 */
+#define TYPE_BURGLAR  0
+#define TYPE_STONE  1
+#define TYPE_TRAP  2
+#define TYPE_BOSS  3
+#define TYPE_DOG  4
+#define TYPE_STRAWBERRY 5
+#define TYPE_WATERMELON 6
+#define TYPE_NUM 7
+
 //------------------------------------------------------------------------------
-// Public Structures:
-//------------------------------------------------------------------------------
+// Public Structures
 
 //------------------------------------------------------------------------------
 // Public Variables:

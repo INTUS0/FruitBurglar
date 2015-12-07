@@ -11,8 +11,9 @@ Purpose:		关卡1  */
 #include "Level1.h"
 #include "AEEngine.h"
 #include "Input.h"
-
-
+#include "Matrix2D.h"
+#include "Vector2D.h"
+#include "Math2D.h"
 
 
 //------------------------------------------------------------------------------
@@ -20,6 +21,14 @@ Purpose:		关卡1  */
 //------------------------------------------------------------------------------
 #define GAME_OBJ_BASE_NUM_MAX	32			// 对象类型（对象基类）数目上限
 #define GAME_OBJ_NUM_MAX		2048		// 对象数目上限
+
+#define BURGLAR_INITIAL_NUM			3		// 主角的lives数目
+#define FRUIT_NUM				3		// 水果数目
+#define BURGLAR_SIZE					30.0f	// 主角尺寸
+#define BURGLER_ACCEL_FORWARD			50.0f	// 主角前向加速度(m/s^2)
+#define BURGLAR_ACCEL_BACKWARD			-100.0f	// 主角后向加速度(m/s^2)
+
+#define FLAG_ACTIVE					0x00000001  // 活动对象标志
 
 //------------------------------------------------------------------------------
 // Private Structures:
@@ -38,8 +47,8 @@ typedef struct
 	GameObjBase*       pObject;     //指向基类
 	unsigned long      flag;        //活动标志
 	float              scale;       //尺寸
-	AEVec2             posCurr;     //当前位置
-	AEVec2             velCurr;     //当前速度
+	Vector2D           posCurr;     //当前位置
+	Vector2D           velCurr;     //当前速度
 	float              dirCurr;     //当前方向
 
 	AEMtx33            transform;   //变换矩阵，每一帧都需要为一个对象计算
@@ -58,15 +67,17 @@ static unsigned long	sGameObjNum;								// 游戏对象的个数
 
 //小盗对象,player
 static GameObj* Burglar;
+//Burglar = (GameObj*)malloc(sizeof(GameObj));
 
 //小盗血量
 static int BurglarBlood;
+static unsigned long sScore; //捡到的水果数
 
 //水果数量
-static int FruitNumber;
+static int Fruit_NUM = 20;
 
 //狗数量
-static int DogNumber;
+static int DOG_NUM = 5;
 
 //农场主血量
 static int BossBlood;
@@ -75,12 +86,18 @@ static int BossBlood;
 //------------------------------------------------------------------------------
 // Private Variables monkey:
 //------------------------------------------------------------------------------
-static AEGfxTexture *pTex1;		// 对象1的纹理
+static AEGfxTexture *pTex1;		// 对象Burglar的纹理
 static AEGfxVertexList*	pMesh1;				// 对象1的网格(mesh)模型
 static float obj1X, obj1Y;		// 对象1的位置
+
+static AEGfxTexture *pTex2;		//对象dog的纹理
+
 //------------------------------------------------------------------------------
 // Private Function Declarations:
 //------------------------------------------------------------------------------
+// 创建/删除游戏对象
+static GameObj*		gameObjCreate(unsigned long type, float scale, Vector2D* pPos, Vector2D* pVel, float dir);
+static void			gameObjDestroy(GameObj* pInst);
 
 //------------------------------------------------------------------------------
 // Public Functions:
@@ -88,8 +105,21 @@ static float obj1X, obj1Y;		// 对象1的位置
 
 void Load1(void)
 {
-	
-	// 开始添加对象1
+
+
+	GameObjBase* pObjBase;
+
+	// 初始化游戏对象基类的实例列表
+	memset(sGameObjBaseList, 0, sizeof(GameObjBase) * GAME_OBJ_BASE_NUM_MAX);
+	sGameObjBaseNum = 0;
+
+	// 创建基类的实例	
+	// =====================
+	//主角
+	// =====================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BURGLAR;
+
 	AEGfxMeshStart();
 	AEGfxTriAdd(
 		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
@@ -99,37 +129,9 @@ void Load1(void)
 		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
 		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
 		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
-		
-	pMesh1 = AEGfxMeshEnd();
-	AE_ASSERT_MESG(pMesh1, "Failed to create mesh 1!!");
-
-	pTex1 = AEGfxTextureLoad("MonkeyStand.png");//载入纹理
-
-	// 签到
-	fprintf(fp, "Level1:Load\n");
-	
-	/*
-	//新代码，初始化对象
-	GameObjBase* pObjBase;
-
-	// 初始化游戏对象基类的实例列表
-	memset(sGameObjBaseList, 0, sizeof(GameObjBase) * GAME_OBJ_BASE_NUM_MAX);
-	sGameObjBaseNum = 0;
-
-	// 创建基类的实例	
-	// =====================
-	// Burglar -主角
-	// =====================
-	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
-	pObjBase->type = TYPE_BURGLAR;
-
-	AEGfxMeshStart();
-	AEGfxTriAdd(
-		-0.5f, 0.5f, 0x01FF0000, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0xFFFF0000, 0.0f, 0.0f,
-		0.5f, 0.0f, 0xFFFFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
+	pTex1 = AEGfxTextureLoad("MonkeyStand.png");//载入纹理
 
 	// =======================
 	// 石头：尺寸很小，简化成三角形定义
@@ -147,10 +149,10 @@ void Load1(void)
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Bullet object!!");
 
 	// =========================
-	//狗：六个三角形弄成“圆”
+	// 陷阱：用六个三角形拼成一个“圆形”
 	// =========================
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
-	pObjBase->type = TYPE_DOG;
+	pObjBase->type = TYPE_TRAP;
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
@@ -182,8 +184,61 @@ void Load1(void)
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
 	// ========================
-	// 导弹：两个三角形拼接的菱形
-	//水果：西瓜
+	// 农场主：两个三角形拼接的菱形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BOSS;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		-0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
+	// ========================
+	// 狗：两个三角形拼接的菱形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_DOG;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-50.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		50.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-50.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		50.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		50.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-50.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+	pTex2 = AEGfxTextureLoad("Dog1.png");//载入纹理
+	// ========================
+	// 草莓：两个三角形拼接的菱形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_STRAWBERRY;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		-0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
+		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
+	// ========================
+	// 西瓜：两个三角形拼接的菱形
 	// ========================
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
 	pObjBase->type = TYPE_WATERMELON;
@@ -199,33 +254,103 @@ void Load1(void)
 		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
-	*/
+
+
+	// 签到
+	fprintf(fp, "Level1:Load\n");
+
+
+
+
 }
 
 void Ini1(void)
 {
-	
+
 	// 对象1的初始位置
 	obj1X = 0.0f;
 	obj1Y = 0.0f;
 
+	GameObj* pObj;
+	int i;
+
 	// 为开始画对象做准备
-	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);   // 背景色RGB
+	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
-	// 签到
-	fprintf(fp, "Level1:Initialize\n");
-	
+	// 对象实例化：游戏开始只有小盗和狗需要实例化
+	// 小盗对象实例化
+	Burglar = gameObjCreate(TYPE_BURGLAR, BURGLAR_SIZE, 0, 0, 0.0f);
+	AE_ASSERT(Burglar);
+	Burglar->posCurr.x = AEGfxGetWinMaxX();
+	Burglar->posCurr.y = 100.0f;
+	Burglar->dirCurr = acosf(Burglar->posCurr.x / ((float)sqrt(Burglar->posCurr.x*Burglar->posCurr.x + Burglar->posCurr.y * Burglar->posCurr.y))) - PI;
+	Burglar->scale = 10.0f;
 
-	//新代码，画对象
+	//狗对象实例化 并 初始化
+	for (i = 0; i < DOG_NUM; i++)
+	{
+		// 实例化
+		pObj = gameObjCreate(TYPE_DOG, 20.0f, 0, 0, 0.0f);
+		AE_ASSERT(pObj);
 
+		// 初始化: 坐标位置 朝向和尺寸大小
+		switch (i)
+		{
+		case 0:
+			pObj->posCurr.x = AEGfxGetWinMaxX() - 30;
+			pObj->posCurr.y = 100.0f;
+			break;
+		case 1:
+			pObj->posCurr.x = 100.0f;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 20;
+			break;
+		case 2:
+			pObj->posCurr.x = AEGfxGetWinMinX() + 30;
+			pObj->posCurr.y = 50.0f;
+			break;
+		case 3:
+			pObj->posCurr.x = 300.0f;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 40;
+			break;
+		case 4:
+			pObj->posCurr.x = AEGfxGetWinMinX() + 20;
+			pObj->posCurr.y = 200.0f;
+			break;
+		}
 
+		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+
+		pObj->scale = 10.0f;
+	}
 }
 
 void Update1(void)
 {
-	// 签到
-	//fprintf(fp, "Level1:Update\n");
+	//unsigned long i;
+	float winMaxX, winMaxY, winMinX, winMinY;
+	double frameTime;
+
+	
+	GameObj* pObj;//指向狗的指针
+
+	// ==========================================================================================
+	// 获取窗口四条边的坐标，当窗口发生移动或缩放，以下值会发生变化
+	// ==========================================================================================
+	winMaxX = AEGfxGetWinMaxX();
+	winMaxY = AEGfxGetWinMaxY();
+	winMinX = AEGfxGetWinMinX();
+	winMinY = AEGfxGetWinMinY();
+
+	// ======================
+	// 帧时间：相当于zero中的dt
+	// ======================
+	frameTime = AEFrameRateControllerGetFrameTime();
+
+	// =========================
+	// 游戏逻辑响应输入
+	// =========================
+
 	// 状态切换
 	if (KeyPressed[KeyR])
 		Next = GS_Restart;
@@ -238,68 +363,117 @@ void Update1(void)
 
 
 	// 对象移动
-	if (KeyPressed[KeyUp] ||KeyPressed[KeyLeftBottom])
-		obj1Y += 2.0f;
+	if (KeyPressed[KeyUp] || KeyPressed[KeyLeftBottom])
+	{
+		obj1Y += 20.0f;
+		
+	}
 	else
 		if (KeyPressed[KeyDown])
-			obj1Y -= 2.0f;
+		{
+			obj1Y -= 20.0f;
 			
+		}
 	if (KeyPressed[KeyLeft])
-		obj1X -= 2.0f;
+	{
+		obj1X -= 20.0f;
+		
+	}
 	else
 		if (KeyPressed[KeyRight])
-			obj1X += 2.0f;
-
+		{
+			obj1X += 20.0f;
+			
+		}
 	if (KeyPressed[KeyRightBottom])
 	{
-		obj1X = posX;
-		obj1Y = posY;
+	obj1X = posX;
+	obj1Y = posY;//鼠标右键坐标赋给主角
 	}
-	
+
+	//检测是否发生了碰撞
+	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
+	{
+		GameObj* pObj = sGameObjList + i;
+		if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 20, 20)&&pObj->flag )
+			gameObjDestroy(Burglar);
+	}
+
+
 	// 输入重置
 	Input_Initialize();
 
 	// 签到
 	fprintf(fp, "Level1:Update\n");
+
+
+
+
 }
 
 void Draw1(void)
 {
+	unsigned long i;
 	// 画对象1
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxSetPosition(obj1X, obj1Y);
-	AEGfxTextureSet(pTex1, obj1X, obj1Y);//设置猴子位置
-	AEGfxSetTransparency(1.0f);
-	AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
-	AEGfxMeshDraw(pMesh1, AE_GFX_MDM_TRIANGLES);
+	
+	if (Burglar->flag& FLAG_ACTIVE)
+	{
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxSetPosition(obj1X, obj1Y);
+		AEGfxTextureSet(pTex1, obj1X, obj1Y);//设置猴子位置
+		//更新猴子位置
+		Burglar->posCurr.x = obj1X;
+		Burglar->posCurr.y = obj1Y;
 
+		AEGfxSetTransparency(1.0f);
+		AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+		AEGfxMeshDraw(Burglar->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+	}
+
+	// 逐个绘制对象列表中的所有对象
+	for (i = 1; i < GAME_OBJ_NUM_MAX; i++)
+	{
+		GameObj* pInst = sGameObjList + i;
+
+		// 跳过非活动对象
+		if ((pInst->flag & FLAG_ACTIVE) == 0)
+			continue;
+
+		// 设置绘制模式(Color or texture)
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		// 设置狗的坐标位置
+		AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+		// 无纹理
+		AEGfxTextureSet(pTex2, 0.0f, 0.0f);
+		// 画对象狗
+		AEGfxSetTransparency(1);
+		AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+		AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+	}
 	// 签到
 	fprintf(fp, "Level1:Draw\n");
 }
 
 void Free1(void)
 {
+	gameObjDestroy(Burglar);
 	// 签到
 	fprintf(fp, "Level1:Free\n");
 }
 
 void Unload1(void)
 {
-	AEGfxMeshFree(pMesh1);		// 注销创建的对象
-	AEGfxTextureUnload(pTex1); //销毁猴子
+	AEGfxMeshFree(Burglar->pObject->pMesh);		// 注销创建的对象
+	//AEGfxTextureUnload(pTex1); //销毁猴子
 
 	// 签到
 	fprintf(fp, "Level1:Unload\n");
 }
-/*
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// Private Functions:
-//------------------------------------------------------------------------------
-GameObj* gameObjCreate(unsigned long type, float scale, AEVec2* pPos, AEVec2* pVel, float dir)
+
+GameObj* gameObjCreate(unsigned long type, float scale, Vector2D* pPos, Vector2D* pVel, float dir)
 {
 	unsigned long i;
-	AEVec2 zero = { 0.0f, 0.0f };
+	Vector2D zero = { 0.0f, 0.0f };
 
 	AE_ASSERT_PARM(type < sGameObjBaseNum);
 
@@ -339,4 +513,3 @@ void gameObjDestroy(GameObj* pInst)
 	// 销毁
 	pInst->flag = 0;
 }
-*/

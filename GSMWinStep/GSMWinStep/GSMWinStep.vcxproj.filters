@@ -81,6 +81,15 @@
     <ClInclude Include="Menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Math2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="glew32.dll">
@@ -117,6 +126,15 @@
     <ClCompile Include="GameStateManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Math2D.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix2D.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2D.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Output.txt">
@@ -132,6 +150,9 @@
     </Image>
     <Image Include="MonkeyStand.png">
       <Filter>Header Files</Filter>
+    </Image>
+    <Image Include="Dog1.png">
+      <Filter>Source Files</Filter>
     </Image>
   </ItemGroup>
 </Project>

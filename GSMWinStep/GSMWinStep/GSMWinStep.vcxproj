@@ -99,8 +99,11 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Level1.h" />
     <ClInclude Include="Level2.h" />
+    <ClInclude Include="Math2D.h" />
+    <ClInclude Include="Matrix2D.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="System.h" />
+    <ClInclude Include="Vector2D.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Alpha_Engine.dll" />
@@ -115,8 +118,11 @@
     <ClCompile Include="Level1.c" />
     <ClCompile Include="Level2.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="Math2D.c" />
+    <ClCompile Include="Matrix2D.c" />
     <ClCompile Include="Menu.c" />
     <ClCompile Include="System.c" />
+    <ClCompile Include="Vector2D.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Output.txt" />
@@ -124,6 +130,7 @@
   <ItemGroup>
     <Image Include="..\..\..\游戏c文件\GProj_Asteroid\GProj_Asteroid\PlanetTexture.png" />
     <Image Include="BackGround.PNG" />
+    <Image Include="Dog1.png" />
     <Image Include="MonkeyStand.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
