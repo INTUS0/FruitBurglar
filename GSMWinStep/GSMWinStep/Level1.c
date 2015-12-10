@@ -82,6 +82,11 @@ static int DOG_NUM = 5;
 //农场主血量
 static int BossBlood;
 
+//帧率控制常量
+static int AnimationCounter = 0; // 控制播放帧
+static int AnimationFPS = 12;
+static float ElapsedTime = 0.0f;
+
 
 //------------------------------------------------------------------------------
 // Private Variables monkey:
@@ -111,6 +116,7 @@ void Load1(void)
 
 	// 初始化游戏对象基类的实例列表
 	memset(sGameObjBaseList, 0, sizeof(GameObjBase) * GAME_OBJ_BASE_NUM_MAX);
+	
 	sGameObjBaseNum = 0;
 
 	// 创建基类的实例	
@@ -123,15 +129,15 @@ void Load1(void)
 	AEGfxMeshStart();
 	AEGfxTriAdd(
 		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 0.125f, 1.0f,
 		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		30.0f, -30.0f, 0x00FFFFFF, 0.125f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 0.125f, 0.0f,
 		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
-	pTex1 = AEGfxTextureLoad("MonkeyStand.png");//载入纹理
+	pTex1 = AEGfxTextureLoad("PlayerRun.png");//载入纹理
 
 	// =======================
 	// 石头：尺寸很小，简化成三角形定义
@@ -270,7 +276,7 @@ void Ini1(void)
 	// 对象1的初始位置
 	obj1X = 0.0f;
 	obj1Y = 0.0f;
-
+	memset(sGameObjList, 0, sizeof(GameObj)*GAME_OBJ_NUM_MAX);
 	GameObj* pObj;
 	int i;
 
@@ -284,6 +290,7 @@ void Ini1(void)
 	AE_ASSERT(Burglar);
 	Burglar->posCurr.x = AEGfxGetWinMaxX();
 	Burglar->posCurr.y = 100.0f;
+
 	Burglar->dirCurr = acosf(Burglar->posCurr.x / ((float)sqrt(Burglar->posCurr.x*Burglar->posCurr.x + Burglar->posCurr.y * Burglar->posCurr.y))) - PI;
 	Burglar->scale = 10.0f;
 
@@ -291,7 +298,7 @@ void Ini1(void)
 	for (i = 0; i < DOG_NUM; i++)
 	{
 		// 实例化
-		pObj = gameObjCreate(TYPE_DOG, 20.0f, 0, 0, 0.0f);
+		pObj = gameObjCreate(TYPE_DOG, 10.0f, 0, 0, 0.0f);
 		AE_ASSERT(pObj);
 
 		// 初始化: 坐标位置 朝向和尺寸大小
@@ -361,11 +368,12 @@ void Update1(void)
 	if (KeyPressed[KeyMenu])
 		Next = GS_MENU;
 
-
+	
 	// 对象移动
 	if (KeyPressed[KeyUp] || KeyPressed[KeyLeftBottom])
 	{
 		obj1Y += 20.0f;
+		
 		
 	}
 	else
@@ -397,24 +405,34 @@ void Update1(void)
 		GameObj* pObj = sGameObjList + i;
 		if (pObj->flag)
 		{
-			if (i % 2)
+			if (pObj->posCurr.x>30)
 			{
-				pObj->velCurr.x = 0.05;
-				pObj->velCurr.y = -0.05;
+				pObj->velCurr.x = -0.5;
+				pObj->velCurr.y = -0.5;
 			}
-			else
+			else if (pObj->posCurr.x<30)
 			{
-				pObj->velCurr.x = -0.05;
-				pObj->velCurr.y = -0.05;
+				pObj->velCurr.x = 0.5;
+				pObj->velCurr.y = -0.5;
 			}
-
-
+			if (pObj->posCurr.y < -50 && pObj->posCurr.x<30)
+			{
+				pObj->velCurr.x = 0.5;
+				pObj->velCurr.y = 0.5;
+			}
 			
 			pObj->posCurr.x += pObj->velCurr.x;
 			pObj->posCurr.y += pObj->velCurr.y;
 		}
-		if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 20, 20)&&pObj->flag )
+		if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
+		{
+			Burglar->scale -= 0.5;
+		}
+		if (Burglar->scale < 1.0f)
+		{
 			gameObjDestroy(Burglar);
+		}
+			
 	}
 
 
@@ -436,12 +454,30 @@ void Draw1(void)
 	
 	if (Burglar->flag& FLAG_ACTIVE)
 	{
+		//主角移动帧率时间
+		float frameTime = AEFrameRateControllerGetFrameTime()*10.0f;
+
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEGfxSetPosition(obj1X, obj1Y);
 		AEGfxTextureSet(pTex1, obj1X, obj1Y);//设置猴子位置
-		//更新猴子位置
+		//更新猴子位置,同时更新相机位置
 		Burglar->posCurr.x = obj1X;
 		Burglar->posCurr.y = obj1Y;
+		//相机的移动
+		//AEGfxSetCamPosition(obj1X, obj1Y);
+
+		//实现主角的动图效果
+		ElapsedTime += frameTime;               // 游戏帧一帧的时间
+		if (ElapsedTime < 1.f / AnimationFPS)	// 如果时间还不到动画帧一帧需要的时间
+			return;								// 则返回
+		else
+			ElapsedTime = 0.0f;                 // 否则重置elapsedTime
+
+		AEGfxTextureSet(pTex1, AnimationCounter*0.125f, 0.0f);
+		AnimationCounter += 1;
+		if (AnimationCounter > 7)
+			AnimationCounter = 0;
+
 
 		AEGfxSetTransparency(1.0f);
 		AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
@@ -475,8 +511,16 @@ void Draw1(void)
 void Free1(void)
 {
 	gameObjDestroy(Burglar);
+	/*
+	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
+	{
+		GameObj* pObj = sGameObjList + i;
+		if (pObj->flag)
+			gameObjDestroy(pObj);
+	}
 	// 签到
 	fprintf(fp, "Level1:Free\n");
+	*/
 }
 
 void Unload1(void)

@@ -154,5 +154,11 @@
     <Image Include="Dog1.png">
       <Filter>Source Files</Filter>
     </Image>
+    <Image Include="MonkeyWalk.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="PlayerRun.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
