@@ -26,6 +26,7 @@ enum{
 	KeyMenu,//菜单键
 	KeyLeftBottom,//鼠标左键
 	KeyRightBottom,//鼠标右键，
+	KeySpace,//空格键
 	KeyNUM    // 总放在最后一个
 };
 boolean KeyPressed[KeyNUM];

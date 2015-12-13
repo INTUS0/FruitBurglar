@@ -132,6 +132,8 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			KeyPressed[KeyRight] = TRUE;
 		if (wParam == 'M')
 			KeyPressed[KeyMenu] = TRUE;
+		if (wParam == VK_SPACE)
+			KeyPressed[KeySpace] = TRUE;
 
 		
 

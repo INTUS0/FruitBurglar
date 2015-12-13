@@ -69,6 +69,9 @@ static unsigned long	sGameObjNum;								// 游戏对象的个数
 static GameObj* Burglar;
 //Burglar = (GameObj*)malloc(sizeof(GameObj));
 
+//石头对象
+GameObj* pStone;
+
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
@@ -96,6 +99,7 @@ static AEGfxVertexList*	pMesh1;				// 对象1的网格(mesh)模型
 static float obj1X, obj1Y;		// 对象1的位置
 
 static AEGfxTexture *pTex2;		//对象dog的纹理
+static AEGfxTexture *pTexStone;
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -147,12 +151,16 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		0.5f, 0.0f, 0xFFFFFFFF, 0.0f, 0.0f);
-
+		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Bullet object!!");
+	pTexStone = AEGfxTextureLoad("planetTexture.png");
 
 	// =========================
 	// 陷阱：用六个三角形拼成一个“圆形”
@@ -197,13 +205,13 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		-0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
@@ -284,7 +292,7 @@ void Ini1(void)
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
 	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
-	// 对象实例化：游戏开始只有小盗和狗需要实例化
+	// 对象实例化：游戏开始只有小盗和狗和农场主需要实例化
 	// 小盗对象实例化
 	Burglar = gameObjCreate(TYPE_BURGLAR, BURGLAR_SIZE, 0, 0, 0.0f);
 	AE_ASSERT(Burglar);
@@ -330,6 +338,16 @@ void Ini1(void)
 
 		pObj->scale = 10.0f;
 	}
+	//初始化农场主
+	pObj = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化农场主位置及朝向比例
+	pObj->posCurr.x = 100.0f;
+	pObj->posCurr.y = 100;
+	pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+
+	pObj->scale = 10.0f;
+	
 }
 
 void Update1(void)
@@ -339,7 +357,7 @@ void Update1(void)
 	double frameTime;
 
 	
-	GameObj* pObj;//指向狗的指针
+	//GameObj* pObj;//指向狗的指针
 
 	// ==========================================================================================
 	// 获取窗口四条边的坐标，当窗口发生移动或缩放，以下值会发生变化
@@ -395,15 +413,26 @@ void Update1(void)
 		}
 	if (KeyPressed[KeyRightBottom])
 	{
-	obj1X = posX;
-	obj1Y = posY;//鼠标右键坐标赋给主角
+	//obj1X = posX;
+	//obj1Y = posY;//鼠标右键坐标赋给主角
+		pStone = gameObjCreate(TYPE_STONE, 10.0f, 0, 0, 0.0f);;
+		AE_ASSERT(pStone);
+		// 实例化
+
+		// 初始化: 坐标位置 朝向和尺寸大小
+		pStone->posCurr.x = posX;
+		pStone->posCurr.y = posY;
+
+		pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
+
+		pStone->scale = 5.0f;
 	}
 
 	//检测是否发生了碰撞
 	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
 	{
 		GameObj* pObj = sGameObjList + i;
-		if (pObj->flag)
+		if (pObj->flag&&pObj->pObject->type==TYPE_DOG)
 		{
 			if (pObj->posCurr.x>30)
 			{
@@ -430,12 +459,25 @@ void Update1(void)
 		}
 		if (Burglar->scale < 1.0f)
 		{
-			gameObjDestroy(Burglar);
+			gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
 		}
 			
 	}
+	if (KeyPressed[KeySpace])
+	{
+		pStone = gameObjCreate(TYPE_STONE, 10.0f, 0, 0, 0.0f);;
+		AE_ASSERT(pStone);
 
+		// 实例化
 
+		// 初始化: 坐标位置 朝向和尺寸大小
+		pStone->posCurr.x = (Burglar->posCurr.x+100.0f);
+		pStone->posCurr.y = (Burglar->posCurr.y+10.0f);
+
+		pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
+
+		pStone->scale = 5.0f;
+	}
 	// 输入重置
 	Input_Initialize();
 
@@ -493,16 +535,53 @@ void Draw1(void)
 		if ((pInst->flag & FLAG_ACTIVE) == 0)
 			continue;
 
-		// 设置绘制模式(Color or texture)
-		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-		// 设置狗的坐标位置
-		AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
-		// 无纹理
-		AEGfxTextureSet(pTex2, 0.0f, 0.0f);
-		// 画对象狗
-		AEGfxSetTransparency(1);
-		AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
-		AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		//创建狗对象
+		if (pInst->pObject->type == TYPE_DOG)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			// 设置狗的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 无纹理
+			AEGfxTextureSet(pTex2, 0.0f, 0.0f);
+			// 画对象狗
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
+		//创建石头对象
+		if (pInst->pObject->type == TYPE_STONE)
+		{
+			//if (KeyPressed[KeySpace])
+		//	{
+				// Drawing object stone
+				// Set position for object stone
+				AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+				//AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+				// Set texture for object stone
+				AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+				AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+				AEGfxSetTransparency(1.0f);
+				AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+				// Drawing the mesh (list of triangles)
+				AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
+		}
+		if (pInst->pObject->type == TYPE_BOSS)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			// 设置狗的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 无纹理
+			AEGfxTextureSet(pTexStone, 0.0f, 0.0f);
+			// 画对象狗
+			AEGfxSetTransparency(1);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+		
 	}
 	// 签到
 	fprintf(fp, "Level1:Draw\n");
