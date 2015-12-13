@@ -132,13 +132,13 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		30.0f, -30.0f, 0x00FFFF00, 0.125f, 1.0f,
-		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-20.0f, -20.0f, 0x00FF00FF, 0.0f, 1.0f,
+		20.0f, -20.0f, 0x00FFFF00, 0.125f, 1.0f,
+		-20.0f, 20.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		30.0f, -30.0f, 0x00FFFFFF, 0.125f, 1.0f,
-		30.0f, 30.0f, 0x00FFFFFF, 0.125f, 0.0f,
-		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		20.0f, -20.0f, 0x00FFFFFF, 0.125f, 1.0f,
+		20.0f, 20.0f, 0x00FFFFFF, 0.125f, 0.0f,
+		-20.0f, 20.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
 	pTex1 = AEGfxTextureLoad("PlayerRun.png");//载入纹理
@@ -151,13 +151,13 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
-		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-10.0f, -10.0f, 0x00FF00FF, 0.0f, 1.0f,
+		10.0f, -10.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-10.0f, 10.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
-		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		10.0f, -10.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		10.0f, 10.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-10.0f, 10.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Bullet object!!");
 	pTexStone = AEGfxTextureLoad("planetTexture.png");
@@ -223,13 +223,13 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-50.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		50.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
-		-50.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-25.0f, -15.0f, 0x00FF00FF, 0.0f, 1.0f,
+		25.0f, -15.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-25.0f, 15.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		50.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		50.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
-		-50.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		25.0f, -15.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		25.0f, 15.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-25.0f, 15.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 	pTex2 = AEGfxTextureLoad("Dog1.png");//载入纹理
@@ -411,11 +411,11 @@ void Update1(void)
 			obj1X += 20.0f;
 			
 		}
-	if (KeyPressed[KeyRightBottom])
+	if( (KeyPressed[KeyRightBottom] )&& (Burglar->flag& FLAG_ACTIVE))
 	{
 	//obj1X = posX;
-	//obj1Y = posY;//鼠标右键坐标赋给主角
-		pStone = gameObjCreate(TYPE_STONE, 10.0f, 0, 0, 0.0f);;
+	//obj1Y = posY;//鼠标右键坐标赋给石头
+		pStone = gameObjCreate(TYPE_STONE, 3.0f, 0, 0, 0.0f);;
 		AE_ASSERT(pStone);
 		// 实例化
 
@@ -434,6 +434,7 @@ void Update1(void)
 		GameObj* pObj = sGameObjList + i;
 		if (pObj->flag&&pObj->pObject->type==TYPE_DOG)
 		{
+			//狗的运动
 			if (pObj->posCurr.x>30)
 			{
 				pObj->velCurr.x = -0.5;
@@ -452,15 +453,18 @@ void Update1(void)
 			
 			pObj->posCurr.x += pObj->velCurr.x;
 			pObj->posCurr.y += pObj->velCurr.y;
+
+			//是否与狗发生碰撞
+			if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
+			{
+				Burglar->scale -= 0.5;
+			}
+			if (Burglar->scale < 1.0f)
+			{
+				gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
+			}
 		}
-		if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
-		{
-			Burglar->scale -= 0.5;
-		}
-		if (Burglar->scale < 1.0f)
-		{
-			gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
-		}
+		
 			
 	}
 	if (KeyPressed[KeySpace])
@@ -551,7 +555,7 @@ void Draw1(void)
 		}
 
 		//创建石头对象
-		if (pInst->pObject->type == TYPE_STONE)
+		if(( pInst->pObject->type == TYPE_STONE ) && ( Burglar->flag & FLAG_ACTIVE ))
 		{
 			//if (KeyPressed[KeySpace])
 		//	{
