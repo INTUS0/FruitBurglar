@@ -72,18 +72,27 @@ static GameObj* Burglar;
 //石头对象
 GameObj* pStone;
 
+
+
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
 
 //水果数量
-static int Fruit_NUM = 20;
+static int Fruit_NUM =0;
+//水果产生时间间隔
+static int TimeTot = 0;
+//临时定义狗运动时间
+static int TimeTot1 = 0;
 
 //狗数量
 static int DOG_NUM = 5;
 
 //农场主血量
 static int BossBlood;
+
+//捡到的石头数量
+static int StoneCount=0;
 
 //帧率控制常量
 static int AnimationCounter = 0; // 控制播放帧
@@ -95,11 +104,11 @@ static float ElapsedTime = 0.0f;
 // Private Variables monkey:
 //------------------------------------------------------------------------------
 static AEGfxTexture *pTex1;		// 对象Burglar的纹理
-static AEGfxVertexList*	pMesh1;				// 对象1的网格(mesh)模型
-static float obj1X, obj1Y;		// 对象1的位置
+static AEGfxVertexList*	pMesh1;	// 对象Burglar的网格(mesh)模型
+static float obj1X, obj1Y;		// 对象burglar的位置
 
 static AEGfxTexture *pTex2;		//对象dog的纹理
-static AEGfxTexture *pTexStone;
+static AEGfxTexture *pTexStone; //移动石头纹理
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -144,10 +153,30 @@ void Load1(void)
 	pTex1 = AEGfxTextureLoad("PlayerRun.png");//载入纹理
 
 	// =======================
-	// 石头：尺寸很小，简化成三角形定义
+	// 发射出去的石头：尺寸很小，简化成三角形定义
 	// =======================
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
 	pObjBase->type = TYPE_STONE;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-10.0f, -10.0f, 0x00FF00FF, 0.0f, 1.0f,
+		10.0f, -10.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-10.0f, 10.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		10.0f, -10.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		10.0f, 10.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-10.0f, 10.0f, 0x00FFFFFF, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Bullet object!!");
+	pTexStone = AEGfxTextureLoad("planetTexture.png");
+
+
+	// =======================
+	// 静止被捡起的石头：尺寸很小，简化成三角形定义
+	// =======================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_STONE_STATIC;
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
@@ -233,6 +262,7 @@ void Load1(void)
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 	pTex2 = AEGfxTextureLoad("Dog1.png");//载入纹理
+
 	// ========================
 	// 草莓：两个三角形拼接的菱形
 	// ========================
@@ -252,20 +282,21 @@ void Load1(void)
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
 	// ========================
-	// 西瓜：两个三角形拼接的菱形
+	// 西瓜：圆形
 	// ========================
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
 	pObjBase->type = TYPE_WATERMELON;
 
 	AEGfxMeshStart();
-	AEGfxTriAdd(
-		0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		-0.5f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, 0.5f, 0xFFFFFF00, 0.0f, 0.0f,
-		0.0f, -0.5f, 0xFFFFFF00, 0.0f, 0.0f);
+	float CircleAngleStep = PI / 12.0f;
+	int Parts = 24;
+	for (int i = 0; i < Parts; ++i)
+	{
+		AEGfxTriAdd(
+			0.0f, 0.0f, 0xFFFFFF00, 0.0f, 0.0f,
+			cosf(i * 2 * PI / Parts)*10.0f, sinf(i * 2 * PI / Parts)*10.0f, 0xFFFFFF00, 0.0f, 0.0f,
+			cosf((i + 1) * 2 * PI / Parts)*10.0f, sinf((i + 1) * 2 * PI / Parts)*10.0f, 0xFFFFFF00, 0.0f, 0.0f);
+	}
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
@@ -338,6 +369,7 @@ void Ini1(void)
 
 		pObj->scale = 10.0f;
 	}
+
 	//初始化农场主
 	pObj = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
 	AE_ASSERT(pObj);
@@ -347,6 +379,34 @@ void Ini1(void)
 	pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
 
 	pObj->scale = 10.0f;
+
+	//初始化静止的石头
+	for (i = 0; i < 3; i++)
+	{
+		pObj = gameObjCreate(TYPE_STONE_STATIC, 3.0f, 0, 0, 0.0f);;
+		AE_ASSERT(pObj);
+		// 实例化
+		// 初始化: 坐标位置 朝向和尺寸大小
+		switch (i)
+		{
+		case 0:
+			pObj->posCurr.x = AEGfxGetWinMaxX() - 50;
+			pObj->posCurr.y = 100.0f;
+			break;
+		case 1:
+			pObj->posCurr.x = 100.0f;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 30;
+			break;
+		case 2:
+			pObj->posCurr.x = AEGfxGetWinMinX() + 40;
+			pObj->posCurr.y = 50.0f;
+			break;
+		}
+		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+
+		pObj->scale = 5.0f;
+	}
+	
 	
 }
 
@@ -356,7 +416,7 @@ void Update1(void)
 	float winMaxX, winMaxY, winMinX, winMinY;
 	double frameTime;
 
-	
+
 	//GameObj* pObj;//指向狗的指针
 
 	// ==========================================================================================
@@ -386,71 +446,133 @@ void Update1(void)
 	if (KeyPressed[KeyMenu])
 		Next = GS_MENU;
 
-	
+
 	// 对象移动
 	if (KeyPressed[KeyUp] || KeyPressed[KeyLeftBottom])
 	{
 		obj1Y += 20.0f;
-		
-		
+
+
 	}
 	else
 		if (KeyPressed[KeyDown])
 		{
 			obj1Y -= 20.0f;
-			
+
 		}
 	if (KeyPressed[KeyLeft])
 	{
 		obj1X -= 20.0f;
-		
+
 	}
 	else
 		if (KeyPressed[KeyRight])
 		{
 			obj1X += 20.0f;
-			
+
 		}
-	if( (KeyPressed[KeyRightBottom] )&& (Burglar->flag& FLAG_ACTIVE))
+
+	//鼠标右键控制石头生成
+	if ((KeyPressed[KeyRightBottom]) && (Burglar->flag& FLAG_ACTIVE) &&StoneCount)
 	{
-	//obj1X = posX;
-	//obj1Y = posY;//鼠标右键坐标赋给石头
+		//obj1X = posX;
+		//obj1Y = posY;//鼠标右键坐标赋给石头
 		pStone = gameObjCreate(TYPE_STONE, 3.0f, 0, 0, 0.0f);;
 		AE_ASSERT(pStone);
 		// 实例化
 
 		// 初始化: 坐标位置 朝向和尺寸大小
-		pStone->posCurr.x = posX;
-		pStone->posCurr.y = posY;
+		pStone->posCurr.x = Burglar->posCurr.x ;
+		pStone->posCurr.y = Burglar->posCurr.y;
+		
 
-		pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
+		//pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
+		//pStone->scale = 5.0f;
 
-		pStone->scale = 5.0f;
+		//石头减一
+		StoneCount -= 1;	
 	}
 
-	//检测是否发生了碰撞
+
+	//随机产生水果，每隔3秒产生一个，一个界面最多产生10个水果
+	TimeTot++;
+	TimeTot1++;
+	if (TimeTot == 180 && Fruit_NUM<10)
+	{
+		Fruit_NUM++;
+		int Xx, Yy;
+		Xx = rand();
+		Yy = rand();
+
+		//控制水果在界面内产生
+		while (Xx > 800.0f) //控制水果在界面宽度内产生
+		{
+			Xx = rand();
+		}
+		while (Yy > 600.0f)//控制水果在界面高度度内产生
+		{
+			Yy = rand();
+		}
+		Xx = Xx - 400.0f;
+		Yy = Yy - 300.0f;
+
+		TimeTot = 0;
+		GameObj* pFruit = gameObjCreate(TYPE_WATERMELON, 3.0f, 0, 0, 0.0f);;
+		AE_ASSERT(pFruit);
+		// 实例化
+
+		// 初始化: 坐标位置 朝向和尺寸大小
+		pFruit->posCurr.x = Xx;
+		pFruit->posCurr.y = Yy;
+
+		pFruit->scale = 5.0f;
+	}
+	else if (TimeTot == 200) TimeTot = 0;
+
+
+	
+	//遍历所有对象以决定操作
 	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
 	{
+
 		GameObj* pObj = sGameObjList + i;
-		if (pObj->flag&&pObj->pObject->type==TYPE_DOG)
+		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
 			//狗的运动
-			if (pObj->posCurr.x>30)
+			if (pObj->posCurr.x > winMaxX-10)
 			{
-				pObj->velCurr.x = -0.5;
-				pObj->velCurr.y = -0.5;
+				pObj->velCurr.x = -5;
 			}
-			else if (pObj->posCurr.x<30)
+			else if (pObj->posCurr.x < winMinX+10)
 			{
-				pObj->velCurr.x = 0.5;
-				pObj->velCurr.y = -0.5;
+				pObj->velCurr.x = 5;
+				
 			}
-			if (pObj->posCurr.y < -50 && pObj->posCurr.x<30)
+			else if (TimeTot1%360 < 180)
 			{
-				pObj->velCurr.x = 0.5;
-				pObj->velCurr.y = 0.5;
+				pObj->velCurr.x = rand() % 3;
 			}
-			
+			else
+			{
+				pObj->velCurr.x =  -rand() % 3;
+			}
+
+			if (pObj->posCurr.y <winMinY+10)
+			{
+				pObj->velCurr.y = 5;
+			}
+			else if (pObj->posCurr.y >winMaxY-10)
+			{
+				pObj->velCurr.y = -5;
+			}
+			else if (TimeTot/360 <180 )
+			{
+				pObj->velCurr.y = -rand() % 3;
+			}
+			else
+			{
+				pObj->velCurr.y = rand() % 3;
+			}
 			pObj->posCurr.x += pObj->velCurr.x;
 			pObj->posCurr.y += pObj->velCurr.y;
 
@@ -464,11 +586,45 @@ void Update1(void)
 				gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
 			}
 		}
-		
-			
+
+
+		//捡石头
+		if (pObj->flag&&pObj->pObject->type == TYPE_STONE_STATIC)
+		{
+			if (StaticRectToStaticRect(&Burglar->posCurr, 33, 30, &pObj->posCurr, 15, 15) )
+			{
+				gameObjDestroy(pObj);
+				StoneCount += 1;
+			}
+		}
+
+		//石头的发射
+		if (pObj->flag && pObj->pObject->type == TYPE_STONE)
+		{
+			//石头朝着鼠标位置运动
+			pStone->velCurr.x = (posX - Burglar->posCurr.x) / 10.0f;
+			pStone->velCurr.y = (posY - Burglar->posCurr.y) / 10.0f;
+
+			pObj->posCurr.x += pObj->velCurr.x ;
+			pObj->posCurr.y += pObj->velCurr.y ;
+		}
+
+		//捡西瓜
+		if (pObj->flag&&pObj->pObject->type == TYPE_WATERMELON)
+		{
+			if (StaticPointToStaticCircle(&Burglar->posCurr, &pObj->posCurr, 10.0))
+			{
+				gameObjDestroy(pObj);
+				Fruit_NUM -= 1;
+				sScore += 10;
+			}
+		}
 	}
+
+	//按空格键
 	if (KeyPressed[KeySpace])
 	{
+		/*
 		pStone = gameObjCreate(TYPE_STONE, 10.0f, 0, 0, 0.0f);;
 		AE_ASSERT(pStone);
 
@@ -481,6 +637,7 @@ void Update1(void)
 		pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
 
 		pStone->scale = 5.0f;
+	*/
 	}
 	// 输入重置
 	Input_Initialize();
@@ -488,16 +645,13 @@ void Update1(void)
 	// 签到
 	fprintf(fp, "Level1:Update\n");
 
-
-
-
 }
 
 void Draw1(void)
 {
 	unsigned long i;
-	// 画对象1
-	
+
+	// 画主角，单独画
 	if (Burglar->flag& FLAG_ACTIVE)
 	{
 		//主角移动帧率时间
@@ -539,7 +693,7 @@ void Draw1(void)
 		if ((pInst->flag & FLAG_ACTIVE) == 0)
 			continue;
 
-		//创建狗对象
+		//绘制狗对象
 		if (pInst->pObject->type == TYPE_DOG)
 		{
 			// 设置绘制模式(Color or texture)
@@ -554,7 +708,7 @@ void Draw1(void)
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 		}
 
-		//创建石头对象
+		//绘制扔出去的石头对象
 		if(( pInst->pObject->type == TYPE_STONE ) && ( Burglar->flag & FLAG_ACTIVE ))
 		{
 			//if (KeyPressed[KeySpace])
@@ -572,6 +726,26 @@ void Draw1(void)
 				AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 			//}
 		}
+		//绘制被捡起来的石头
+		if (pInst->pObject->type == TYPE_STONE_STATIC)
+		{
+			//if (KeyPressed[KeySpace])
+			//	{
+			// Drawing object stone
+			// Set position for object stone
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+			//AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+			// Set texture for object stone
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			// Drawing the mesh (list of triangles)
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
+		}
+
+		//绘制boss
 		if (pInst->pObject->type == TYPE_BOSS)
 		{
 			// 设置绘制模式(Color or texture)
@@ -585,6 +759,22 @@ void Draw1(void)
 			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 		}
+
+		//绘制西瓜对象
+		if (pInst->pObject->type == TYPE_WATERMELON)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			// 设置西瓜的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 无纹理
+			AEGfxTextureSet(NULL, 0.0f, 0.0f);
+			AEGfxSetTintColor(1.0f, 1.0f, 1.0f, 1.0f);
+			// 画对象西瓜
+			//AEGfxSetTransparency(1);
+			//AEGfxSetBlendColor(1.0f, 1.0f, 1.0, 1.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
 		
 	}
 	// 签到
@@ -594,7 +784,7 @@ void Draw1(void)
 void Free1(void)
 {
 	gameObjDestroy(Burglar);
-	/*
+	
 	for (int i = 1; i < GAME_OBJ_NUM_MAX; i++)
 	{
 		GameObj* pObj = sGameObjList + i;
@@ -603,7 +793,7 @@ void Free1(void)
 	}
 	// 签到
 	fprintf(fp, "Level1:Free\n");
-	*/
+	
 }
 
 void Unload1(void)
