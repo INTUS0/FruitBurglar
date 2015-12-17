@@ -51,7 +51,7 @@ typedef struct
 	Vector2D           velCurr;     //当前速度
 	float              dirCurr;     //当前方向
 
-	AEMtx33            transform;   //变换矩阵，每一帧都需要为一个对象计算
+	Matrix2D           transform;   //变换矩阵，每一帧都需要为一个对象计算
 }GameObj;
 
 
@@ -539,6 +539,7 @@ void Update1(void)
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
 			//狗的运动
+			
 			if (pObj->posCurr.x > winMaxX-10)
 			{
 				pObj->velCurr.x = -5;
@@ -573,6 +574,37 @@ void Update1(void)
 			{
 				pObj->velCurr.y = rand() % 3;
 			}
+			/*
+			while (pObj->posCurr.y <winMaxY && pObj->posCurr.y>winMinY
+				&&pObj->posCurr.x > winMinX&&pObj->posCurr.x < winMaxX)
+			{
+				if (pObj->posCurr.x > 10 && pObj->posCurr.y > 10)
+				{
+					pObj->velCurr.y = -rand() % 2;
+					pObj->velCurr.x = -rand() % 2;
+				}
+				if (pObj->posCurr.x > 10 && pObj->posCurr.y < 10)
+				{
+					pObj->velCurr.y = rand() % 2;
+					pObj->velCurr.x = -rand() % 2;
+				}
+				if (pObj->posCurr.x < 10 && pObj->posCurr.y < 10)
+				{
+					pObj->velCurr.y = rand() % 2;
+					pObj->velCurr.x = rand() % 2;
+				}
+				if (pObj->posCurr.x < 10 && pObj->posCurr.y>10)
+				{
+					pObj->velCurr.y = -rand() % 2;
+					pObj->velCurr.x = rand() % 2;
+				}
+				else
+				{
+					pObj->velCurr.y = rand() % 2;
+					pObj->velCurr.x = rand() % 2;
+				}
+			}
+			*/
 			pObj->posCurr.x += pObj->velCurr.x;
 			pObj->posCurr.y += pObj->velCurr.y;
 
@@ -607,6 +639,21 @@ void Update1(void)
 
 			pObj->posCurr.x += pObj->velCurr.x ;
 			pObj->posCurr.y += pObj->velCurr.y ;
+
+			//碰撞到狗或者boss
+			for (int j = 1; j < GAME_OBJ_NUM_MAX; j++)
+			{
+
+				GameObj* pObj0 = sGameObjList + j;
+				if (pObj0->flag && (pObj0->pObject->type == TYPE_DOG || pObj0->pObject->type == TYPE_BOSS))
+				{
+					if (StaticPointToStaticCircle(&pObj->posCurr, &pObj0->posCurr, 10.0))
+					{
+						gameObjDestroy(pObj0);
+						gameObjDestroy(pObj);
+					}
+				}
+			}
 		}
 
 		//捡西瓜
