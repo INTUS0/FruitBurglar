@@ -1,8 +1,8 @@
 /* Project:		GSMWinStep
 File Name:	Level1.c
 Author(former):		刘芳
-Author KY
-Date:		2015-9-15
+Author  INT US
+Date:		2015-9-15 -- 2015-1-20
 Purpose:		关卡1  */
 
 #include <stdio.h>
@@ -123,8 +123,6 @@ static void			gameObjDestroy(GameObj* pInst);
 
 void Load1(void)
 {
-
-
 	GameObjBase* pObjBase;
 
 	// 初始化游戏对象基类的实例列表
@@ -507,14 +505,14 @@ void Update1(void)
 		//控制水果在界面内产生
 		while (Xx > 800.0f) //控制水果在界面宽度内产生
 		{
-			Xx = rand();
+			Xx = (int)rand();
 		}
 		while (Yy > 600.0f)//控制水果在界面高度度内产生
 		{
-			Yy = rand();
+			Yy = (int)rand();
 		}
-		Xx = Xx - 400.0f;
-		Yy = Yy - 300.0f;
+		Xx = Xx - 400;
+		Yy = Yy - 300;
 
 		TimeTot = 0;
 		GameObj* pFruit = gameObjCreate(TYPE_WATERMELON, 3.0f, 0, 0, 0.0f);;
@@ -539,17 +537,16 @@ void Update1(void)
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
 			//狗的运动
-			
-			if (pObj->posCurr.x > winMaxX-10)
+			if (pObj->posCurr.x < winMaxX && pObj->posCurr.x > winMaxX-50)
 			{
-				pObj->velCurr.x = -5;
+				pObj->velCurr.x = -1.5;
 			}
-			else if (pObj->posCurr.x < winMinX+10)
+			else if (pObj->posCurr.x > winMinX  && pObj->posCurr.x < winMinX + 50)
 			{
-				pObj->velCurr.x = 5;
+				pObj->velCurr.x = 1.5;
 				
 			}
-			else if (TimeTot1%360 < 180)
+			else if (TimeTot1 % 360 < 180)
 			{
 				pObj->velCurr.x = rand() % 3;
 			}
@@ -558,15 +555,15 @@ void Update1(void)
 				pObj->velCurr.x =  -rand() % 3;
 			}
 
-			if (pObj->posCurr.y <winMinY+10)
+			if (pObj->posCurr.y < winMinY + 50 && pObj->posCurr.y > winMinY )
 			{
-				pObj->velCurr.y = 5;
+				pObj->velCurr.y = 1.5;
 			}
-			else if (pObj->posCurr.y >winMaxY-10)
+			else if (pObj->posCurr.y >winMaxY - 50 && pObj->posCurr.y <winMaxY )
 			{
 				pObj->velCurr.y = -5;
 			}
-			else if (TimeTot/360 <180 )
+			else if (TimeTot1 % 360 <180 )
 			{
 				pObj->velCurr.y = -rand() % 3;
 			}
@@ -574,37 +571,8 @@ void Update1(void)
 			{
 				pObj->velCurr.y = rand() % 3;
 			}
-			/*
-			while (pObj->posCurr.y <winMaxY && pObj->posCurr.y>winMinY
-				&&pObj->posCurr.x > winMinX&&pObj->posCurr.x < winMaxX)
-			{
-				if (pObj->posCurr.x > 10 && pObj->posCurr.y > 10)
-				{
-					pObj->velCurr.y = -rand() % 2;
-					pObj->velCurr.x = -rand() % 2;
-				}
-				if (pObj->posCurr.x > 10 && pObj->posCurr.y < 10)
-				{
-					pObj->velCurr.y = rand() % 2;
-					pObj->velCurr.x = -rand() % 2;
-				}
-				if (pObj->posCurr.x < 10 && pObj->posCurr.y < 10)
-				{
-					pObj->velCurr.y = rand() % 2;
-					pObj->velCurr.x = rand() % 2;
-				}
-				if (pObj->posCurr.x < 10 && pObj->posCurr.y>10)
-				{
-					pObj->velCurr.y = -rand() % 2;
-					pObj->velCurr.x = rand() % 2;
-				}
-				else
-				{
-					pObj->velCurr.y = rand() % 2;
-					pObj->velCurr.x = rand() % 2;
-				}
-			}
-			*/
+			
+		
 			pObj->posCurr.x += pObj->velCurr.x;
 			pObj->posCurr.y += pObj->velCurr.y;
 
@@ -664,6 +632,33 @@ void Update1(void)
 				gameObjDestroy(pObj);
 				Fruit_NUM -= 1;
 				sScore += 10;
+			}
+		}
+
+
+		//Boss 的运动跟碰撞
+		if (pObj->flag && pObj->pObject->type ==TYPE_BOSS)
+		{
+			pObj->velCurr.x = Burglar->posCurr.x - pObj->posCurr.x/20.0f;
+			pObj->velCurr.y = Burglar->posCurr.y - pObj->posCurr.y/20.0f;
+
+			if (pObj->posCurr.x == Burglar->posCurr.x)
+			{
+				pObj->velCurr.y = 1.0f;
+			}
+			if (pObj->posCurr.y == Burglar->posCurr.y)
+			{
+				pObj->velCurr.x = 1.0f;
+			}
+			//农场主跟着主角移动
+			pObj->posCurr.x += pObj->velCurr.x / 50.0f;
+			pObj->posCurr.y += pObj->velCurr.y / 50.0f;
+
+			
+			//发生碰撞，主角死亡
+			if (StaticRectToStaticRect(&Burglar->posCurr, 15.0f, 15.0f, &pObj->posCurr, 15.0f, 15.0f))
+			{
+				gameObjDestroy(Burglar);
 			}
 		}
 	}
