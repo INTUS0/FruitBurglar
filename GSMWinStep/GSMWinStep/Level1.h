@@ -27,6 +27,9 @@ enum OBJ_TYPE{	//游戏对象列表	TYPE_BURGLAR = 0,	TYPE_STONE,	TYPE_TRAP,	TYP
 #define TYPE_STRAWBERRY 6
 #define TYPE_WATERMELON 7
 #define TYPE_NUM 8
+#define TYPE_BOSSBLOOD 9
+#define TYPE_BURGLARBLOOD 10
+#define TYPE_BURGLARLIVES 11
 
 //------------------------------------------------------------------------------
 // Public Structures

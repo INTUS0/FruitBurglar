@@ -72,6 +72,8 @@ static GameObj* Burglar;
 //石头对象
 GameObj* pStone;
 
+//农场主对象
+GameObj* pBoss;
 
 
 //小盗血量
@@ -299,6 +301,60 @@ void Load1(void)
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
 
+	// ========================
+	// BOSS血量：两个三角形拼接的长方形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BOSSBLOOD;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-20.0f, 4.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
+		20.0f, 6.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
+		-20.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
+	AEGfxTriAdd(
+		20.0f, -2.0f, 0x01FF0000, 1.0f, 1.0f,
+		20.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,
+		-20.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
+	// ========================
+	// 小盗血量：两个三角形拼接的长方形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BURGLARBLOOD;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+	    -20.0f, 4.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
+		28.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
+		-20.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
+	AEGfxTriAdd(
+		16.0f, -4.0f, 0x01FF0000, 1.0f, 1.0f,
+		20.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,
+		-20.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
+	// ========================
+	// 小盗生命数：两个三角形拼接的长方形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BURGLARLIVES;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-30.0f, 4.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
+		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
+		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
+	AEGfxTriAdd(
+		30.0f, -4.0f, 0x01FF0000, 1.0f, 1.0f,
+		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,
+		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
 	// 签到
 	fprintf(fp, "Level1:Load\n");
 
@@ -316,6 +372,8 @@ void Ini1(void)
 	memset(sGameObjList, 0, sizeof(GameObj)*GAME_OBJ_NUM_MAX);
 	GameObj* pObj;
 	int i;
+
+	BossBlood = 2;      //初始化BOSS血量
 
 	// 为开始画对象做准备
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -369,14 +427,22 @@ void Ini1(void)
 	}
 
 	//初始化农场主
-	pObj = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
-	AE_ASSERT(pObj);
+	pBoss = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pBoss);
 	//初始化农场主位置及朝向比例
-	pObj->posCurr.x = 100.0f;
-	pObj->posCurr.y = 100;
-	pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+	pBoss->posCurr.x = 100.0f;
+	pBoss->posCurr.y = 100;
+	pBoss->dirCurr = acosf(pBoss->posCurr.x / ((float)sqrt(pBoss->posCurr.x*pBoss->posCurr.x + pBoss->posCurr.y * pBoss->posCurr.y))) - PI;
 
-	pObj->scale = 10.0f;
+	pBoss->scale = 10.0f;
+
+	//农场主血量初始化
+	pObj = gameObjCreate(TYPE_BOSSBLOOD, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化血量位置
+	pObj->posCurr.x = pBoss->posCurr.x;
+	pObj->posCurr.y = pBoss->posCurr.y + 35.0f;
+
 
 	//初始化静止的石头
 	for (i = 0; i < 3; i++)
@@ -534,6 +600,20 @@ void Update1(void)
 	{
 
 		GameObj* pObj = sGameObjList + i;
+
+
+		if (pObj->flag && pObj->pObject->type == TYPE_BURGLARBLOOD)
+		{
+			//更新血量位置
+			pObj->posCurr.x = Burglar->posCurr.x;
+			pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
+
+			if (!Burglar->flag&FLAG_ACTIVE)
+			{
+				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
+			}
+		}
+
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
 			//狗的运动
@@ -651,8 +731,8 @@ void Update1(void)
 				pObj->velCurr.x = 1.0f;
 			}
 			//农场主跟着主角移动
-			pObj->posCurr.x += pObj->velCurr.x / 50.0f;
-			pObj->posCurr.y += pObj->velCurr.y / 50.0f;
+			pObj->posCurr.x += pObj->velCurr.x / 100.0f;
+			pObj->posCurr.y += pObj->velCurr.y / 100.0f;
 
 			
 			//发生碰撞，主角死亡
@@ -804,6 +884,22 @@ void Draw1(void)
 
 		//绘制西瓜对象
 		if (pInst->pObject->type == TYPE_WATERMELON)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			// 设置西瓜的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 无纹理
+			AEGfxTextureSet(NULL, 0.0f, 0.0f);
+			AEGfxSetTintColor(1.0f, 1.0f, 1.0f, 1.0f);
+			// 画对象西瓜
+			//AEGfxSetTransparency(1);
+			//AEGfxSetBlendColor(1.0f, 1.0f, 1.0, 1.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
+		//绘制主角血量
+		if (pInst->pObject->type == TYPE_BURGLARBLOOD)
 		{
 			// 设置绘制模式(Color or texture)
 			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
