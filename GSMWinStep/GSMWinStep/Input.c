@@ -61,10 +61,7 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_RBUTTON)
 		{
 			KeyPressed[KeyRightBottom] = TRUE;
-			p.x = LOWORD(lParam) - 400;    //获取鼠标位置x坐标信息
-			p.y = -HIWORD(lParam) + 300;    //获取鼠标位置y坐标信息
-			posX = p.x;
-			posY = p.y;
+			
 		}
 			
 			
@@ -74,8 +71,13 @@ LRESULT CALLBACK Input_Handle(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		//GS_Running = 0;
 		//鼠标键
 		if (wParam == VK_LBUTTON)
+		{
 			KeyPressed[KeyLeftBottom] = TRUE;
-		
+			p.x = LOWORD(lParam) - 400;    //获取鼠标位置x坐标信息
+			p.y = -HIWORD(lParam) + 300;    //获取鼠标位置y坐标信息
+			posX = p.x;
+			posY = p.y;
+		}
 		break;
 
 	case WM_MOUSEMOVE:

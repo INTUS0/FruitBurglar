@@ -16,20 +16,32 @@
 //------------------------------------------------------------------------------
 
 /*
-enum OBJ_TYPE{	//游戏对象列表	TYPE_BURGLAR = 0,	TYPE_STONE,	TYPE_TRAP,	TYPE_BOSS,	TYPE_DOG,	TYPE_STRAWBERRY,	TYPE_WATERMELON,	TYPE_NUM};
+enum OBJ_TYPE
+{
+	//游戏对象列表
+	TYPE_BURGLAR = 0,
+	TYPE_STONE,
+	TYPE_TRAP,
+	TYPE_BOSS,
+	TYPE_DOG,
+	TYPE_STRAWBERRY,
+	TYPE_WATERMELON,
+	TYPE_NUM
+};
 */
 #define TYPE_BURGLAR  0
 #define TYPE_STONE  1
 #define TYPE_STONE_STATIC 2
-#define TYPE_TRAP  3
-#define TYPE_BOSS  4
-#define TYPE_DOG  5
-#define TYPE_STRAWBERRY 6
-#define TYPE_WATERMELON 7
-#define TYPE_NUM 8
+#define TYPE_TRAP_IN  3
+#define TYPE_TRAP_OUT 4
+#define TYPE_BOSS  5
+#define TYPE_DOG  6
+#define TYPE_STRAWBERRY 7
+#define TYPE_WATERMELON 8
 #define TYPE_BOSSBLOOD 9
 #define TYPE_BURGLARBLOOD 10
 #define TYPE_BURGLARLIVES 11
+#define TYPE_NUM 12
 
 //------------------------------------------------------------------------------
 // Public Structures

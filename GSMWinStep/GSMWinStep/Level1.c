@@ -14,7 +14,9 @@ Purpose:		关卡1  */
 #include "Matrix2D.h"
 #include "Vector2D.h"
 #include "Math2D.h"
-
+#include <Windows.h>
+//#include <time.h>
+//#pragma comment(lib,"Winmm.lib")
 
 //------------------------------------------------------------------------------
 // Private Consts:
@@ -70,22 +72,24 @@ static GameObj* Burglar;
 //Burglar = (GameObj*)malloc(sizeof(GameObj));
 
 //石头对象
-GameObj* pStone;
+static GameObj* pStone;
+//陷阱对象
+static GameObj* pTrap;
 
 //农场主对象
-GameObj* pBoss;
-
+static GameObj* pBoss;
 
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
 
 //水果数量
-static int Fruit_NUM =0;
+static int Fruit_NUM = 0;
 //水果产生时间间隔
 static int TimeTot = 0;
 //临时定义狗运动时间
 static int TimeTot1 = 0;
+
 
 //狗数量
 static int DOG_NUM = 5;
@@ -111,7 +115,7 @@ static float obj1X, obj1Y;		// 对象burglar的位置
 
 static AEGfxTexture *pTex2;		//对象dog的纹理
 static AEGfxTexture *pTexStone; //移动石头纹理
-
+static AEGfxTexture *pTexTrap; //陷阱纹理
 //------------------------------------------------------------------------------
 // Private Function Declarations:
 //------------------------------------------------------------------------------
@@ -192,37 +196,38 @@ void Load1(void)
 	pTexStone = AEGfxTextureLoad("planetTexture.png");
 
 	// =========================
-	// 陷阱：用六个三角形拼成一个“圆形”
+	// 看得见的陷阱
 	// =========================
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
-	pObjBase->type = TYPE_TRAP;
+	pObjBase->type = TYPE_TRAP_IN;
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		0.5f, 0.0f, 0xFF0000FF, 0.0f, 0.0f,
-		0.25f, 0.4f, 0xFF0000FF, 0.0f, 0.0f);
+		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		0.25f, 0.4f, 0xFF0000FF, 0.0f, 0.0f,
-		-0.25f, 0.4f, 0xFF0000FF, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		-0.5f, 0.0f, 0xFF0000FF, 0.0f, 0.0f,
-		-0.25f, 0.4f, 0xFF0000FF, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		0.5f, 0.0f, 0xFF0000FF, 0.0f, 0.0f,
-		0.25f, -0.4f, 0xFF0000FF, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		0.25f, -0.4f, 0xFF0000FF, 0.0f, 0.0f,
-		-0.25f, -0.4f, 0xFF0000FF, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.0f, 0.0f, 0x010000FF, 0.0f, 0.0f,
-		-0.5f, 0.0f, 0xFF0000FF, 0.0f, 0.0f,
-		-0.25f, -0.4f, 0xFF0000FF, 0.0f, 0.0f);
+		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+	pTexTrap = AEGfxTextureLoad("planetTexture.png");; //陷阱纹理
+
+	//看不见的陷阱
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_TRAP_OUT;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
+		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
@@ -243,7 +248,7 @@ void Load1(void)
 		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
-
+	
 	// ========================
 	// 狗：两个三角形拼接的菱形
 	// ========================
@@ -365,6 +370,15 @@ void Load1(void)
 
 void Ini1(void)
 {
+	
+	//水果数量
+	Fruit_NUM = 0;
+	//水果产生时间间隔
+	TimeTot = 0;
+	//临时定义狗运动时间
+	TimeTot1 = 0;
+	//石头数量
+	StoneCount = 0;
 
 	// 对象1的初始位置
 	obj1X = 0.0f;
@@ -385,69 +399,13 @@ void Ini1(void)
 	AE_ASSERT(Burglar);
 	Burglar->posCurr.x = AEGfxGetWinMaxX();
 	Burglar->posCurr.y = 100.0f;
-
 	Burglar->dirCurr = acosf(Burglar->posCurr.x / ((float)sqrt(Burglar->posCurr.x*Burglar->posCurr.x + Burglar->posCurr.y * Burglar->posCurr.y))) - PI;
 	Burglar->scale = 10.0f;
-
-	//狗对象实例化 并 初始化
-	for (i = 0; i < DOG_NUM; i++)
-	{
-		// 实例化
-		pObj = gameObjCreate(TYPE_DOG, 10.0f, 0, 0, 0.0f);
-		AE_ASSERT(pObj);
-
-		// 初始化: 坐标位置 朝向和尺寸大小
-		switch (i)
-		{
-		case 0:
-			pObj->posCurr.x = AEGfxGetWinMaxX() - 30;
-			pObj->posCurr.y = 100.0f;
-			break;
-		case 1:
-			pObj->posCurr.x = 100.0f;
-			pObj->posCurr.y = AEGfxGetWinMaxY() - 20;
-			break;
-		case 2:
-			pObj->posCurr.x = AEGfxGetWinMinX() + 30;
-			pObj->posCurr.y = 50.0f;
-			break;
-		case 3:
-			pObj->posCurr.x = 300.0f;
-			pObj->posCurr.y = AEGfxGetWinMaxY() - 40;
-			break;
-		case 4:
-			pObj->posCurr.x = AEGfxGetWinMinX() + 20;
-			pObj->posCurr.y = 200.0f;
-			break;
-		}
-
-		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
-
-		pObj->scale = 10.0f;
-	}
-
-	//初始化农场主
-	pBoss = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
-	AE_ASSERT(pBoss);
-	//初始化农场主位置及朝向比例
-	pBoss->posCurr.x = 100.0f;
-	pBoss->posCurr.y = 100;
-	pBoss->dirCurr = acosf(pBoss->posCurr.x / ((float)sqrt(pBoss->posCurr.x*pBoss->posCurr.x + pBoss->posCurr.y * pBoss->posCurr.y))) - PI;
-
-	pBoss->scale = 10.0f;
-
-	//农场主血量初始化
-	pObj = gameObjCreate(TYPE_BOSSBLOOD, 10.0f, 0, 0, 0.0f);
-	AE_ASSERT(pObj);
-	//初始化血量位置
-	pObj->posCurr.x = pBoss->posCurr.x;
-	pObj->posCurr.y = pBoss->posCurr.y + 35.0f;
-
 
 	//初始化静止的石头
 	for (i = 0; i < 3; i++)
 	{
-		pObj = gameObjCreate(TYPE_STONE_STATIC, 3.0f, 0, 0, 0.0f);;
+		pObj = gameObjCreate(TYPE_STONE_STATIC, 3.0f, 0, 0, 0.0f);
 		AE_ASSERT(pObj);
 		// 实例化
 		// 初始化: 坐标位置 朝向和尺寸大小
@@ -470,7 +428,129 @@ void Ini1(void)
 
 		pObj->scale = 5.0f;
 	}
+
+	//初始化看不见的陷阱
+	for (int a = 0; a < 3; a++)
+	{
+		pObj = gameObjCreate(TYPE_TRAP_IN, 10.0f, 0, 0, 0.0f);
+		AE_ASSERT(pObj);
+		//初始化陷阱位置及朝向比例
+
+		pObj->posCurr.x = a*100.0f;
+		pObj->posCurr.y = -100.0f;
+		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+
+		pObj->scale = 10.0f;
+	}
+
+	//初始化农场主
+	pBoss = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pBoss);
+	//初始化农场主位置及朝向比例
+	pBoss->posCurr.x = 100.0f;
+	pBoss->posCurr.y = 100;
+	pBoss->dirCurr = acosf(pBoss->posCurr.x / ((float)sqrt(pBoss->posCurr.x*pBoss->posCurr.x + pBoss->posCurr.y * pBoss->posCurr.y))) - PI;
+	pBoss->scale = 10.0f;
+
+	//狗对象实例化 并 初始化
+	for (i = 0; i < DOG_NUM; i++)
+	{
+		// 实例化
+		pObj = gameObjCreate(TYPE_DOG, 10.0f, 0, 0, 0.0f);
+		AE_ASSERT(pObj);
+
+		// 初始化: 坐标位置 朝向和尺寸大小
+		switch (i)
+		{
+		case 0:
+			pObj->posCurr.x = AEGfxGetWinMaxX() - 30;
+			pObj->posCurr.y = 100.0f;
+			//pObj->velCurr.x = 2.0f;
+			//pObj->velCurr.y = 2.0f;
+			break;
+		case 1:
+			pObj->posCurr.x = 100.0f;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 20;
+			//pObj->velCurr.x = -3.0f;
+			//pObj->velCurr.y = -2.0f;
+			break;
+		case 2:
+			pObj->posCurr.x = AEGfxGetWinMinX() + 30;
+			pObj->posCurr.y = 5.0f;
+			//pObj->velCurr.x = 1.5f;
+			//pObj->velCurr.y = -1.5f;
+			break;
+		case 3:
+			pObj->posCurr.x = 300.0f;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 40;
+			//pObj->velCurr.x = -3.0f;
+			//pObj->velCurr.y = 2.0f;
+			break;
+		case 4:
+			pObj->posCurr.x = AEGfxGetWinMinX() + 20;
+			pObj->posCurr.y = 200.0f;
+			//pObj->velCurr.x = -2.0f;
+			//pObj->velCurr.y = 2.0f;
+			break;
+		}
+
+		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
+
+		pObj->scale = 10.0f;
+	}
+
 	
+	//农场主血量初始化
+	pObj = gameObjCreate(TYPE_BOSSBLOOD, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化血量位置
+	pObj->posCurr.x = pBoss->posCurr.x;
+	pObj->posCurr.y = pBoss->posCurr.y + 35.0f;
+
+	//主角血量初始化
+	pObj = gameObjCreate(TYPE_BURGLARBLOOD, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化血量位置
+	pObj->posCurr.x = Burglar->posCurr.x;
+	pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
+
+	
+	
+	//地图的引入
+	FILE *fp = NULL;
+	int mapinfo[50][50];//
+	if ((fp = fopen("wdp.txt", "r")) != NULL)
+	{
+		int length = 0, width = 0;
+		fscanf(fp, "%d%d", &length, &width);
+		int i = 0, j = 0;
+		for (; i != length; i++)
+		{
+			for (j = 0; j != width; j++)
+			{
+				fscanf(fp, "%d", &mapinfo[i][j]);
+			}
+		}
+		//读入地图
+		for (i = 0; i != length; i++)
+		{
+			for (j = 0; j != width; j++)
+			{
+				if (mapinfo[i][j] == 1)
+				{
+					//画地图
+					pObj = gameObjCreate(TYPE_STONE_STATIC, 2.0f, 0, 0, 0.0f);
+					AE_ASSERT(pObj);
+					pObj->posCurr.x = i / 20.0f + 20.0f;
+					pObj->posCurr.y = -j/20.0f + 10.0f;
+				}
+			}
+		}
+	}
+	else if ((fp = fopen("wdp.txt", "r")) == NULL)
+	{
+		KeyPressed[KeyESC] = TRUE;
+	}
 	
 }
 
@@ -479,9 +559,8 @@ void Update1(void)
 	//unsigned long i;
 	float winMaxX, winMaxY, winMinX, winMinY;
 	double frameTime;
-
-
-	//GameObj* pObj;//指向狗的指针
+	
+	
 
 	// ==========================================================================================
 	// 获取窗口四条边的坐标，当窗口发生移动或缩放，以下值会发生变化
@@ -499,7 +578,6 @@ void Update1(void)
 	// =========================
 	// 游戏逻辑响应输入
 	// =========================
-
 	// 状态切换
 	if (KeyPressed[KeyR])
 		Next = GS_Restart;
@@ -511,48 +589,39 @@ void Update1(void)
 		Next = GS_MENU;
 
 
-	// 对象移动
-	if (KeyPressed[KeyUp] || KeyPressed[KeyLeftBottom])
+	// 主角的移动
+	if (KeyPressed[KeyUp])
 	{
 		obj1Y += 20.0f;
-
-
+		
 	}
 	else
 		if (KeyPressed[KeyDown])
 		{
 			obj1Y -= 20.0f;
-
 		}
 	if (KeyPressed[KeyLeft])
 	{
 		obj1X -= 20.0f;
-
 	}
 	else
 		if (KeyPressed[KeyRight])
 		{
 			obj1X += 20.0f;
-
 		}
 
-	//鼠标右键控制石头生成
-	if ((KeyPressed[KeyRightBottom]) && (Burglar->flag& FLAG_ACTIVE) &&StoneCount)
+	//鼠标左键控制石头生成
+	if ((KeyPressed[KeyLeftBottom]) && (Burglar->flag& FLAG_ACTIVE) &&StoneCount)
 	{
-		//obj1X = posX;
-		//obj1Y = posY;//鼠标右键坐标赋给石头
+		
 		pStone = gameObjCreate(TYPE_STONE, 3.0f, 0, 0, 0.0f);;
 		AE_ASSERT(pStone);
 		// 实例化
-
 		// 初始化: 坐标位置 朝向和尺寸大小
+		//在主角位置产生，射向鼠标位置
 		pStone->posCurr.x = Burglar->posCurr.x ;
 		pStone->posCurr.y = Burglar->posCurr.y;
 		
-
-		//pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
-		//pStone->scale = 5.0f;
-
 		//石头减一
 		StoneCount -= 1;	
 	}
@@ -601,83 +670,6 @@ void Update1(void)
 
 		GameObj* pObj = sGameObjList + i;
 
-
-		if (pObj->flag && pObj->pObject->type == TYPE_BURGLARBLOOD)
-		{
-			//更新血量位置
-			pObj->posCurr.x = Burglar->posCurr.x;
-			pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
-
-			if (!Burglar->flag&FLAG_ACTIVE)
-			{
-				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
-			}
-		}
-
-		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
-		{
-			//狗的运动
-			if (pObj->posCurr.x < winMaxX && pObj->posCurr.x > winMaxX-50)
-			{
-				pObj->velCurr.x = -1.5;
-			}
-			else if (pObj->posCurr.x > winMinX  && pObj->posCurr.x < winMinX + 50)
-			{
-				pObj->velCurr.x = 1.5;
-				
-			}
-			else if (TimeTot1 % 360 < 180)
-			{
-				pObj->velCurr.x = rand() % 3;
-			}
-			else
-			{
-				pObj->velCurr.x =  -rand() % 3;
-			}
-
-			if (pObj->posCurr.y < winMinY + 50 && pObj->posCurr.y > winMinY )
-			{
-				pObj->velCurr.y = 1.5;
-			}
-			else if (pObj->posCurr.y >winMaxY - 50 && pObj->posCurr.y <winMaxY )
-			{
-				pObj->velCurr.y = -5;
-			}
-			else if (TimeTot1 % 360 <180 )
-			{
-				pObj->velCurr.y = -rand() % 3;
-			}
-			else
-			{
-				pObj->velCurr.y = rand() % 3;
-			}
-			
-		
-			pObj->posCurr.x += pObj->velCurr.x;
-			pObj->posCurr.y += pObj->velCurr.y;
-
-			//是否与狗发生碰撞
-			if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
-			{
-				Burglar->scale -= 0.5;
-			}
-			if (Burglar->scale < 1.0f)
-			{
-				gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
-			}
-		}
-
-
-		//捡石头
-		if (pObj->flag&&pObj->pObject->type == TYPE_STONE_STATIC)
-		{
-			if (StaticRectToStaticRect(&Burglar->posCurr, 33, 30, &pObj->posCurr, 15, 15) )
-			{
-				gameObjDestroy(pObj);
-				StoneCount += 1;
-			}
-		}
-
 		//石头的发射
 		if (pObj->flag && pObj->pObject->type == TYPE_STONE)
 		{
@@ -685,8 +677,8 @@ void Update1(void)
 			pStone->velCurr.x = (posX - Burglar->posCurr.x) / 10.0f;
 			pStone->velCurr.y = (posY - Burglar->posCurr.y) / 10.0f;
 
-			pObj->posCurr.x += pObj->velCurr.x ;
-			pObj->posCurr.y += pObj->velCurr.y ;
+			pObj->posCurr.x += pObj->velCurr.x;
+			pObj->posCurr.y += pObj->velCurr.y;
 
 			//碰撞到狗或者boss
 			for (int j = 1; j < GAME_OBJ_NUM_MAX; j++)
@@ -704,23 +696,53 @@ void Update1(void)
 			}
 		}
 
-		//捡西瓜
-		if (pObj->flag&&pObj->pObject->type == TYPE_WATERMELON)
+		//捡石头
+		if (pObj->flag&&pObj->pObject->type == TYPE_STONE_STATIC)
 		{
-			if (StaticPointToStaticCircle(&Burglar->posCurr, &pObj->posCurr, 10.0))
+			if (StaticRectToStaticRect(&Burglar->posCurr, 33, 30, &pObj->posCurr, 15, 15))
 			{
 				gameObjDestroy(pObj);
-				Fruit_NUM -= 1;
-				sScore += 10;
+				StoneCount += 1;
 			}
 		}
 
 
-		//Boss 的运动跟碰撞
-		if (pObj->flag && pObj->pObject->type ==TYPE_BOSS)
+		//离陷阱距离近时
+		if (pObj->flag && pObj->pObject->type == TYPE_TRAP_IN)
 		{
-			pObj->velCurr.x = Burglar->posCurr.x - pObj->posCurr.x/20.0f;
-			pObj->velCurr.y = Burglar->posCurr.y - pObj->posCurr.y/20.0f;
+			if (Burglar->flag&FLAG_ACTIVE)
+			{
+				if (((pObj->posCurr.x - Burglar->posCurr.x)*(pObj->posCurr.x - Burglar->posCurr.x) + (pObj->posCurr.y - Burglar->posCurr.y) *(pObj->posCurr.y - Burglar->posCurr.y)) < 4000)
+				{
+					pTrap = gameObjCreate(TYPE_TRAP_OUT, 10.0f, 0, 0, 0.0f);
+					pTrap->posCurr.x = pObj->posCurr.x;
+					pTrap->posCurr.y = pObj->posCurr.y;
+					pTrap->scale = 10.0;
+
+					if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 40, 40) && pObj->flag)
+					{
+						Burglar->scale -= 0.5;
+					}
+					if (Burglar->scale < 1.0f)
+					{
+						gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
+					}
+				}
+			}
+
+		}
+		//远离陷阱时
+		if (pObj->flag && pObj->pObject->type == TYPE_TRAP_OUT)
+		{
+			if (((pObj->posCurr.x - Burglar->posCurr.x)*(pObj->posCurr.x - Burglar->posCurr.x) + (pObj->posCurr.y - Burglar->posCurr.y) *(pObj->posCurr.y - Burglar->posCurr.y))>40000)
+				gameObjDestroy(pObj);
+		}
+
+		//Boss 的运动跟碰撞
+		if (pObj->flag && pObj->pObject->type == TYPE_BOSS)
+		{
+			pObj->velCurr.x = Burglar->posCurr.x - pObj->posCurr.x / 20.0f;
+			pObj->velCurr.y = Burglar->posCurr.y - pObj->posCurr.y / 20.0f;
 
 			if (pObj->posCurr.x == Burglar->posCurr.x)
 			{
@@ -734,32 +756,113 @@ void Update1(void)
 			pObj->posCurr.x += pObj->velCurr.x / 100.0f;
 			pObj->posCurr.y += pObj->velCurr.y / 100.0f;
 
-			
+
 			//发生碰撞，主角死亡
 			if (StaticRectToStaticRect(&Burglar->posCurr, 15.0f, 15.0f, &pObj->posCurr, 15.0f, 15.0f))
 			{
 				gameObjDestroy(Burglar);
 			}
 		}
+
+		//狗的运动
+		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
+		{
+			srand(time());
+			int angle =rand() % 360;
+			double anglex = cos((double)angle / 180 * 3.14);
+			double angley = sin((double)angle / 180 * 3.14);
+			
+			if (pObj->posCurr.x < winMaxX && pObj->posCurr.x > winMaxX - 50)
+			{
+				pObj->velCurr.x = -15;
+			}
+			else if (pObj->posCurr.x > winMinX  && pObj->posCurr.x < winMinX + 50)
+			{
+				pObj->velCurr.x = 15;
+
+			}
+			
+			else if (TimeTot1 % 360 < 180)
+			{
+				pObj->velCurr.x = 3*anglex;
+			}
+			else
+			{
+				pObj->velCurr.x = -3*anglex;
+			}
+
+			if (pObj->posCurr.y < winMinY + 50 && pObj->posCurr.y > winMinY)
+			{
+				pObj->velCurr.y = 15;
+			}
+			else if (pObj->posCurr.y >winMaxY - 50 && pObj->posCurr.y <winMaxY)
+			{
+				pObj->velCurr.y = -15;
+			}
+			else if (TimeTot1 % 360 <180)
+			{
+				pObj->velCurr.y = 3*angley;
+			}
+			else
+			{
+				pObj->velCurr.y = 3*angley;
+			}
+			
+			
+				//int angle = rand() % 360;
+				//double anglex = cos((double)angle/180*3.14);
+		
+				//double angley = sin((double)angle/180*3.14);
+				//pObj->velCurr.x *= (anglex+ 1*anglex);
+				//pObj->velCurr.y *= (angley +angley);
+				
+			pObj->posCurr.x += pObj->velCurr.x;
+			pObj->posCurr.y += pObj->velCurr.y;
+
+			//是否与狗发生碰撞
+			if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
+			{
+				Burglar->scale -= 0.5;
+			}
+			if (Burglar->scale < 1.0f)
+			{
+				gameObjDestroy(Burglar);//碰撞了，减少scale，并销毁对象
+			}
+		}
+
+		//捡西瓜
+		if (pObj->flag&&pObj->pObject->type == TYPE_WATERMELON)
+		{
+			if (StaticPointToStaticCircle(&Burglar->posCurr, &pObj->posCurr, 10.0))
+			{
+				gameObjDestroy(pObj);
+				Fruit_NUM -= 1;
+				sScore += 10;
+			}
+		}
+
+
+		if (pObj->flag && pObj->pObject->type == TYPE_BURGLARBLOOD)
+		{
+			//更新血量位置
+			pObj->posCurr.x = Burglar->posCurr.x;
+			pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
+
+			if (!Burglar->flag&FLAG_ACTIVE)
+			{
+				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
+			}
+		}
+
+		
+
+		
 	}
 
 	//按空格键
 	if (KeyPressed[KeySpace])
 	{
-		/*
-		pStone = gameObjCreate(TYPE_STONE, 10.0f, 0, 0, 0.0f);;
-		AE_ASSERT(pStone);
-
-		// 实例化
-
-		// 初始化: 坐标位置 朝向和尺寸大小
-		pStone->posCurr.x = (Burglar->posCurr.x+100.0f);
-		pStone->posCurr.y = (Burglar->posCurr.y+10.0f);
-
-		pStone->dirCurr = acosf(pStone->posCurr.x / ((float)sqrt(pStone->posCurr.x*pStone->posCurr.x + pStone->posCurr.y * pStone->posCurr.y))) - PI;
-
-		pStone->scale = 5.0f;
-	*/
+		
 	}
 	// 输入重置
 	Input_Initialize();
@@ -815,49 +918,16 @@ void Draw1(void)
 		if ((pInst->flag & FLAG_ACTIVE) == 0)
 			continue;
 
-		//绘制狗对象
-		if (pInst->pObject->type == TYPE_DOG)
-		{
-			// 设置绘制模式(Color or texture)
-			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-			// 设置狗的坐标位置
-			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
-			// 无纹理
-			AEGfxTextureSet(pTex2, 0.0f, 0.0f);
-			// 画对象狗
-			AEGfxSetTransparency(1.0f);
-			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
-			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
-		}
-
 		//绘制扔出去的石头对象
-		if(( pInst->pObject->type == TYPE_STONE ) && ( Burglar->flag & FLAG_ACTIVE ))
-		{
-			//if (KeyPressed[KeySpace])
-		//	{
-				// Drawing object stone
-				// Set position for object stone
-				AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
-				//AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
-				// Set texture for object stone
-				AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
-				AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
-				AEGfxSetTransparency(1.0f);
-				AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
-				// Drawing the mesh (list of triangles)
-				AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
-			//}
-		}
-		//绘制被捡起来的石头
-		if (pInst->pObject->type == TYPE_STONE_STATIC)
+		if ((pInst->pObject->type == TYPE_STONE) && (Burglar->flag & FLAG_ACTIVE))
 		{
 			//if (KeyPressed[KeySpace])
 			//	{
 			// Drawing object stone
 			// Set position for object stone
 			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
-			//AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
-			// Set texture for object stone
+													 //AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+													 // Set texture for object stone
 			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
 			AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
 			AEGfxSetTransparency(1.0f);
@@ -866,6 +936,65 @@ void Draw1(void)
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 			//}
 		}
+
+		//绘制被捡起来的石头
+		if (pInst->pObject->type == TYPE_STONE_STATIC)
+		{
+			//if (KeyPressed[KeySpace])
+			//	{
+			// Drawing object stone
+			// Set position for object stone
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+													 //AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+													 // Set texture for object stone
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			// Drawing the mesh (list of triangles)
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
+		}
+
+		//绘制隐藏的陷阱
+		if (pInst->pObject->type == TYPE_TRAP_IN)
+		{
+
+			//if (KeyPressed[KeySpace])
+			//	{
+			// Drawing object stone
+			// Set position for object stone
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);   // 必须最先设置绘制模式为纹理
+												   //AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+												   // Set texture for object stone
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			//AEGfxTextureSet(pTexStone, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			// Drawing the mesh (list of triangles)
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
+		}
+
+		//绘制陷阱
+		if (pInst->pObject->type == TYPE_TRAP_OUT)
+		{
+			//if (KeyPressed[KeySpace])
+			//	{
+			// Drawing object stone
+			// Set position for object stone
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+													 //AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+													 // Set texture for object stone
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			AEGfxTextureSet(pTexTrap, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			// Drawing the mesh (list of triangles)
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
+		}
+
 
 		//绘制boss
 		if (pInst->pObject->type == TYPE_BOSS)
@@ -881,6 +1010,22 @@ void Draw1(void)
 			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 		}
+
+		//绘制狗对象
+		if (pInst->pObject->type == TYPE_DOG)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			// 设置狗的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 无纹理
+			AEGfxTextureSet(pTex2, 0.0f, 0.0f);
+			// 画对象狗
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
 
 		//绘制西瓜对象
 		if (pInst->pObject->type == TYPE_WATERMELON)
