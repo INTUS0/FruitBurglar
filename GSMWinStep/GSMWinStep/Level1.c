@@ -78,7 +78,8 @@ static GameObj* pTrap;
 
 //农场主对象
 static GameObj* pBoss;
-
+//狗
+static GameObj* pDog[5];
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
@@ -457,6 +458,7 @@ void Ini1(void)
 	{
 		// 实例化
 		pObj = gameObjCreate(TYPE_DOG, 10.0f, 0, 0, 0.0f);
+		pDog[i] = pObj;//给狗分配指针
 		AE_ASSERT(pObj);
 
 		// 初始化: 坐标位置 朝向和尺寸大小
@@ -464,7 +466,7 @@ void Ini1(void)
 		{
 		case 0:
 			pObj->posCurr.x = AEGfxGetWinMaxX() - 30;
-			pObj->posCurr.y = 100.0f;
+			pObj->posCurr.y = -100.0f;
 			//pObj->velCurr.x = 2.0f;
 			//pObj->velCurr.y = 2.0f;
 			break;
@@ -476,12 +478,12 @@ void Ini1(void)
 			break;
 		case 2:
 			pObj->posCurr.x = AEGfxGetWinMinX() + 30;
-			pObj->posCurr.y = 5.0f;
+			pObj->posCurr.y = -50.0f;
 			//pObj->velCurr.x = 1.5f;
 			//pObj->velCurr.y = -1.5f;
 			break;
 		case 3:
-			pObj->posCurr.x = 300.0f;
+			pObj->posCurr.x = 200.0f;
 			pObj->posCurr.y = AEGfxGetWinMaxY() - 40;
 			//pObj->velCurr.x = -3.0f;
 			//pObj->velCurr.y = 2.0f;
@@ -629,7 +631,6 @@ void Update1(void)
 
 	//随机产生水果，每隔3秒产生一个，一个界面最多产生10个水果
 	TimeTot++;
-	TimeTot1++;
 	if (TimeTot == 180 && Fruit_NUM<10)
 	{
 		Fruit_NUM++;
@@ -764,60 +765,29 @@ void Update1(void)
 			}
 		}
 
-		//狗的运动
+		//狗的边界控制
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
-			srand(time());
-			int angle =rand() % 360;
-			double anglex = cos((double)angle / 180 * 3.14);
-			double angley = sin((double)angle / 180 * 3.14);
-			
-			if (pObj->posCurr.x < winMaxX && pObj->posCurr.x > winMaxX - 50)
+			if (pObj->posCurr.x <= winMaxX && pObj->posCurr.x >= winMaxX - 20)
 			{
-				pObj->velCurr.x = -15;
-			}
-			else if (pObj->posCurr.x > winMinX  && pObj->posCurr.x < winMinX + 50)
-			{
-				pObj->velCurr.x = 15;
+				pObj->posCurr.x -= 1.5;
 
 			}
-			
-			else if (TimeTot1 % 360 < 180)
+			if (pObj->posCurr.x >= winMinX  && pObj->posCurr.x <= winMinX + 20)
 			{
-				pObj->velCurr.x = 3*anglex;
+				pObj->posCurr.x += 1.5;
 			}
-			else
+			if (pObj->posCurr.y <= winMinY + 20 && pObj->posCurr.y >= winMinY)
 			{
-				pObj->velCurr.x = -3*anglex;
+				pObj->posCurr.y += 1.5;
 			}
+			if (pObj->posCurr.y >= winMaxY - 20 && pObj->posCurr.y <= winMaxY)
+			{
+				pObj->posCurr.y -= 1.5;
+			}
+			//pObj->posCurr.x += pObj->velCurr.x;
+			//pObj->posCurr.y += pObj->velCurr.y;
 
-			if (pObj->posCurr.y < winMinY + 50 && pObj->posCurr.y > winMinY)
-			{
-				pObj->velCurr.y = 15;
-			}
-			else if (pObj->posCurr.y >winMaxY - 50 && pObj->posCurr.y <winMaxY)
-			{
-				pObj->velCurr.y = -15;
-			}
-			else if (TimeTot1 % 360 <180)
-			{
-				pObj->velCurr.y = 3*angley;
-			}
-			else
-			{
-				pObj->velCurr.y = 3*angley;
-			}
-			
-			
-				//int angle = rand() % 360;
-				//double anglex = cos((double)angle/180*3.14);
-		
-				//double angley = sin((double)angle/180*3.14);
-				//pObj->velCurr.x *= (anglex+ 1*anglex);
-				//pObj->velCurr.y *= (angley +angley);
-				
-			pObj->posCurr.x += pObj->velCurr.x;
-			pObj->posCurr.y += pObj->velCurr.y;
 
 			//是否与狗发生碰撞
 			if (StaticRectToStaticRect(&Burglar->posCurr, 30, 30, &pObj->posCurr, 30, 30) && pObj->flag)
@@ -852,13 +822,42 @@ void Update1(void)
 			{
 				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
 			}
-		}
-
-		
-
-		
+		}	
 	}
-
+	//狗的运动
+	TimeTot1++;
+	if (TimeTot1 < 240)
+	{
+		pDog[0]->posCurr.x += 1.5;
+		pDog[1]->posCurr.x -= 1.5;
+		pDog[2]->posCurr.y += 1.5;
+		pDog[3]->posCurr.y -= 1.5;
+		pDog[4]->posCurr.x += 1.5;
+	}
+	if (TimeTot1 >= 240 && TimeTot1 < 480)
+	{
+		pDog[0]->posCurr.x -= 1.5;
+		pDog[1]->posCurr.x += 1.5;
+		pDog[2]->posCurr.y -= 1.5;
+		pDog[3]->posCurr.y += 1.5;
+		pDog[4]->posCurr.x -= 1.5;
+	}
+	if (TimeTot1 >= 480 && TimeTot1 < 720)
+	{
+		pDog[0]->posCurr.y += 1.5;
+		pDog[1]->posCurr.y -= 1.5;
+		pDog[2]->posCurr.x += 1.5;
+		pDog[3]->posCurr.x -= 1.5;
+		pDog[4]->posCurr.y += 1.5;
+	}
+	if (TimeTot1 >= 720 && TimeTot1 < 960)
+	{
+		pDog[0]->posCurr.y -= 1.5;
+		pDog[1]->posCurr.y += 1.5;
+		pDog[2]->posCurr.x -= 1.5;
+		pDog[3]->posCurr.x += 1.5;
+		pDog[4]->posCurr.y -= 1.5;
+	}
 	//按空格键
 	if (KeyPressed[KeySpace])
 	{

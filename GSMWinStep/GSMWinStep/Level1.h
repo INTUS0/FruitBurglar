@@ -1,6 +1,6 @@
 /* Project:		GSMPre
    File Name:	Level1.h
-   Author:		刘芳
+   Author:		INT US
    Date:		2015-9-15
    Purpose:		关卡1的属性和函数声明*/
 

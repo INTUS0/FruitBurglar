@@ -14,6 +14,19 @@
 //------------------------------------------------------------------------------
 // Public Consts:
 //------------------------------------------------------------------------------
+#define TYPE_BURGLAR  0
+#define TYPE_STONE  1
+#define TYPE_STONE_STATIC 2
+#define TYPE_TRAP_IN  3
+#define TYPE_TRAP_OUT 4
+#define TYPE_BOSS  5
+#define TYPE_DOG  6
+#define TYPE_STRAWBERRY 7
+#define TYPE_WATERMELON 8
+#define TYPE_BOSSBLOOD 9
+#define TYPE_BURGLARBLOOD 10
+#define TYPE_BURGLARLIVES 11
+#define TYPE_NUM 12
 
 //------------------------------------------------------------------------------
 // Public Structures:
