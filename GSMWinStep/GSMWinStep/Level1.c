@@ -826,7 +826,7 @@ void Update1(void)
 	}
 	//狗的运动
 	TimeTot1++;
-	if (TimeTot1 < 240)
+	if (TimeTot1 < 300)
 	{
 		pDog[0]->posCurr.x += 1.5;
 		pDog[1]->posCurr.x -= 1.5;
@@ -834,7 +834,7 @@ void Update1(void)
 		pDog[3]->posCurr.y -= 1.5;
 		pDog[4]->posCurr.x += 1.5;
 	}
-	if (TimeTot1 >= 240 && TimeTot1 < 480)
+	if (TimeTot1 >= 300 && TimeTot1 < 600)
 	{
 		pDog[0]->posCurr.x -= 1.5;
 		pDog[1]->posCurr.x += 1.5;
@@ -842,7 +842,7 @@ void Update1(void)
 		pDog[3]->posCurr.y += 1.5;
 		pDog[4]->posCurr.x -= 1.5;
 	}
-	if (TimeTot1 >= 480 && TimeTot1 < 720)
+	if (TimeTot1 >= 600 && TimeTot1 < 900)
 	{
 		pDog[0]->posCurr.y += 1.5;
 		pDog[1]->posCurr.y -= 1.5;
@@ -850,7 +850,7 @@ void Update1(void)
 		pDog[3]->posCurr.x -= 1.5;
 		pDog[4]->posCurr.y += 1.5;
 	}
-	if (TimeTot1 >= 720 && TimeTot1 < 960)
+	if (TimeTot1 >= 900 && TimeTot1 < 1200)
 	{
 		pDog[0]->posCurr.y -= 1.5;
 		pDog[1]->posCurr.y += 1.5;
@@ -858,6 +858,8 @@ void Update1(void)
 		pDog[3]->posCurr.x += 1.5;
 		pDog[4]->posCurr.y -= 1.5;
 	}
+	if (TimeTot1 == 1200)
+		TimeTot1 = 0;
 	//按空格键
 	if (KeyPressed[KeySpace])
 	{
