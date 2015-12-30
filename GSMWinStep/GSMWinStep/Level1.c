@@ -378,8 +378,7 @@ void Ini1(void)
 	TimeTot = 0;
 	//临时定义狗运动时间
 	TimeTot1 = 0;
-	//石头数量
-	StoneCount = 0;
+	
 
 	// 对象1的初始位置
 	obj1X = 0.0f;
@@ -517,7 +516,7 @@ void Ini1(void)
 	pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
 
 	
-	
+	/*
 	//地图的引入
 	FILE *fp = NULL;
 	int mapinfo[50][50];//
@@ -533,6 +532,7 @@ void Ini1(void)
 				fscanf(fp, "%d", &mapinfo[i][j]);
 			}
 		}
+		
 		//读入地图
 		for (i = 0; i != length; i++)
 		{
@@ -553,7 +553,7 @@ void Ini1(void)
 	{
 		KeyPressed[KeyESC] = TRUE;
 	}
-	
+	*/
 }
 
 void Update1(void)
@@ -613,7 +613,7 @@ void Update1(void)
 		}
 
 	//鼠标左键控制石头生成
-	if ((KeyPressed[KeyLeftBottom]) && (Burglar->flag& FLAG_ACTIVE) &&StoneCount)
+	if ((KeyPressed[KeyLeftBottom]) && (Burglar->flag& FLAG_ACTIVE) && (StoneCount>0))
 	{
 		
 		pStone = gameObjCreate(TYPE_STONE, 3.0f, 0, 0, 0.0f);;

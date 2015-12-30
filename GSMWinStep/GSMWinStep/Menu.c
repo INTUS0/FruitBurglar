@@ -87,8 +87,8 @@ void UpdateMenu(void)
 		Next = GS_Quit;
 	if (KeyPressed[Key1])
 		Next = GS_L1;
-	if (KeyPressed[KeyMenu])
-		Next = GS_MENU;
+	if (KeyPressed[Key2])
+		Next = GS_L2;
 	// 对象移动
 	//不需要运动
 	/*
