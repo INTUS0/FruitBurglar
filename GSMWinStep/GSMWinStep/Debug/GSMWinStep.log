@@ -1,15 +1,15 @@
-﻿Build started 2016/1/5 16:50:48.
+﻿Build started 2016/1/5 17:57:09.
      1>Project "C:\FruitBurglar2\GSMWinStep\GSMWinStep\GSMWinStep.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt  /D _CRT_SECURE_NO_WARNINGS Level2.c
          Level2.c
-     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(642): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
      1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(643): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
-     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(793): warning C4013: 'time' undefined; assuming extern returning int
-     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(794): warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(644): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(794): warning C4013: 'time' undefined; assuming extern returning int
      1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(795): warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
-     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(821): warning C4101: 'x' : unreferenced local variable
-     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(881): warning C4244: 'initializing' : conversion from 'f64' to 'float', possible loss of data
+     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(796): warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(822): warning C4101: 'x' : unreferenced local variable
+     1>c:\fruitburglar2\gsmwinstep\gsmwinstep\level2.c(882): warning C4244: 'initializing' : conversion from 'f64' to 'float', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\FruitBurglar2\GSMWinStep\Debug\GSMWinStep.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\FruitBurglar2\GSMWinStep\Debug\GSMWinStep.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\FruitBurglar2\GSMWinStep\Debug\GSMWinStep.lib" /MACHINE:X86 Debug\GameStateManager.obj
          Debug\Input.obj
@@ -27,4 +27,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.78
+Time Elapsed 00:00:00.70

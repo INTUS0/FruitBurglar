@@ -179,7 +179,7 @@ void Load2(void)
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Bullet object!!");
 	pTexStone = AEGfxTextureLoad("planetTexture.png");
 
-
+	
 	// =======================
 	// 静止被捡起的石头：尺寸很小，简化成三角形定义
 	// =======================
@@ -261,13 +261,13 @@ void Load2(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-10.0f, -6.0f, 0x00FF00FF, 0.0f, 1.0f,
-		10.0f, -6.0f, 0x00FFFF00, 1.0f, 1.0f,
-		-10.0f, 6.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-15.0f, -9.0f, 0x00FF00FF, 0.0f, 1.0f,
+		15.0f, -9.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-15.0f, 9.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		10.0f, -6.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		10.0f, 6.0f, 0x00FFFFFF, 1.0f, 0.0f,
-		-10.0f, 6.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		15.0f, -9.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		15.0f, 9.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-15.0f, 9.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 	pTex2 = AEGfxTextureLoad("Dog1.png");//载入纹理
@@ -395,7 +395,8 @@ void Ini2(void)
 	TimeTot = 0;
 	//临时定义狗运动时间
 	TimeTot1 = 0;
-
+	//捡到的石头数量
+	static int StoneCount = 10;
 
 	// 对象1的初始位置
 	obj1X = -10.0f;
@@ -596,7 +597,7 @@ void Update2(void)
 		}
 
 	//鼠标左键控制石头生成
-	if ((KeyPressed[KeyLeftBottom]) && (Burglar->flag& FLAG_ACTIVE) && (StoneCount>0))
+	if ((KeyPressed[KeyLeftBottom]) && (Burglar->flag& FLAG_ACTIVE))//&& (StoneCount>0))
 	{
 
 		pStone = gameObjCreate(TYPE_STONE, 3.0f, 0, 0, 0.0f);;
@@ -793,22 +794,22 @@ void Update2(void)
 		srand(time());
 		int PosDogX = (pDog[a]->posCurr.x + 400) / 40;
 		int PosDogY = (pDog[a]->posCurr.y + 300) / 15;
-		if (mapinfo[PosDogX - 1][PosDogY] == 0)
-		{
-			pDog[a]->posCurr.x -= 1;
-		}
-		else if (mapinfo[PosDogX + 1][PosDogY] == 0)
+		if (mapinfo[PosDogX - 1][PosDogY])
 		{
 			pDog[a]->posCurr.x += 1;
 		}
-
-		else if (mapinfo[PosDogX][PosDogY + 1] == 0)
+		else if (mapinfo[PosDogX + 1][PosDogY])
 		{
-			pDog[a]->posCurr.y += 1;
+			pDog[a]->posCurr.x -= 1;
 		}
-		else  if (mapinfo[PosDogX][PosDogY - 1] == 0)
+
+		else if (mapinfo[PosDogX][PosDogY + 1])
 		{
 			pDog[a]->posCurr.y -= 1;
+		}
+		else  if (mapinfo[PosDogX][PosDogY - 1])
+		{
+			pDog[a]->posCurr.y += 1;
 		}
 		//else
 		//{
