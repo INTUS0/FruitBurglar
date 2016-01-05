@@ -82,6 +82,9 @@ static GameObj* pTrap;
 static GameObj* pBoss;
 //狗
 static GameObj* pDog[5];
+
+static AEGfxTexture *pTexMap;		//对象Map的纹理
+
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
@@ -116,6 +119,7 @@ static AEGfxTexture *pTex2;		//对象dog的纹理
 static AEGfxTexture *pTexStone; //移动石头纹理
 static AEGfxTexture *pTexTrap; //陷阱纹理
 
+int mapinfo[50][50];//地图数组
 
 //------------------------------------------------------------------------------
 // Private Function Declarations:
@@ -145,13 +149,13 @@ void Load2(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-20.0f, -20.0f, 0x00FF00FF, 0.0f, 1.0f,
-		20.0f, -20.0f, 0x00FFFF00, 0.125f, 1.0f,
-		-20.0f, 20.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-15.0f, -15.0f, 0x00FF00FF, 0.0f, 1.0f,
+		15.0f, -15.0f, 0x00FFFF00, 0.125f, 1.0f,
+		-15.0f, 12.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		20.0f, -20.0f, 0x00FFFFFF, 0.125f, 1.0f,
-		20.0f, 20.0f, 0x00FFFFFF, 0.125f, 0.0f,
-		-20.0f, 20.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		15.0f, -15.0f, 0x00FFFFFF, 0.125f, 1.0f,
+		15.0f, 15.0f, 0x00FFFFFF, 0.125f, 0.0f,
+		-15.0f, 15.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
 	pTex1 = AEGfxTextureLoad("PlayerRun.png");//载入纹理
@@ -239,13 +243,13 @@ void Load2(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-30.0f, -30.0f, 0x00FF00FF, 0.0f, 1.0f,
-		30.0f, -30.0f, 0x00FFFF00, 1.0f, 1.0f,
-		-30.0f, 30.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-20.0f, -20.0f, 0x00FF00FF, 0.0f, 1.0f,
+		20.0f, -20.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-20.0f, 20.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		30.0f, -30.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		30.0f, 30.0f, 0x00FFFFFF, 1.0f, 0.0f,
-		-30.0f, 30.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		20.0f, -20.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		20.0f, 20.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-20.0f, 20.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
@@ -257,13 +261,13 @@ void Load2(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-25.0f, -15.0f, 0x00FF00FF, 0.0f, 1.0f,
-		25.0f, -15.0f, 0x00FFFF00, 1.0f, 1.0f,
-		-25.0f, 15.0f, 0x00F00FFF, 0.0f, 0.0f);
+		-10.0f, -6.0f, 0x00FF00FF, 0.0f, 1.0f,
+		10.0f, -6.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-10.0f, 6.0f, 0x00F00FFF, 0.0f, 0.0f);
 	AEGfxTriAdd(
-		25.0f, -15.0f, 0x00FFFFFF, 1.0f, 1.0f,
-		25.0f, 15.0f, 0x00FFFFFF, 1.0f, 0.0f,
-		-25.0f, 15.0f, 0x00FFFFFF, 0.0f, 0.0f);
+		10.0f, -6.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		10.0f, 6.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-10.0f, 6.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 	pTex2 = AEGfxTextureLoad("Dog1.png");//载入纹理
@@ -360,6 +364,24 @@ void Load2(void)
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
+	// =====================
+	//地图
+	// =====================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_MAP;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-6.0f, -6.0f, 0x00FF00FF, 0.0f, 1.0f,
+		6.0f, -6.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-6.0f, 6.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		7.0f, -7.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		7.0f, 7.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-7.0f, 7.0f, 0x00FFFFFF, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
+	pTexMap = AEGfxTextureLoad("map.png");
 
 	// 签到
 	fprintf(fp, "Level2:Load\n");
@@ -376,7 +398,7 @@ void Ini2(void)
 
 
 	// 对象1的初始位置
-	obj1X = 0.0f;
+	obj1X = -10.0f;
 	obj1Y = 0.0f;
 	memset(sGameObjList, 0, sizeof(GameObj)*GAME_OBJ_NUM_MAX);
 	GameObj* pObj;
@@ -392,7 +414,7 @@ void Ini2(void)
 	// 小盗对象实例化
 	Burglar = gameObjCreate(TYPE_BURGLAR, BURGLAR_SIZE, 0, 0, 0.0f);
 	AE_ASSERT(Burglar);
-	Burglar->posCurr.x = AEGfxGetWinMaxX();
+	Burglar->posCurr.x = AEGfxGetWinMaxX()-20;
 	Burglar->posCurr.y = 100.0f;
 	Burglar->dirCurr = acosf(Burglar->posCurr.x / ((float)sqrt(Burglar->posCurr.x*Burglar->posCurr.x + Burglar->posCurr.y * Burglar->posCurr.y))) - PI;
 	Burglar->scale = 10.0f;
@@ -476,6 +498,42 @@ void Ini2(void)
 	//初始化血量位置
 	pObj->posCurr.x = Burglar->posCurr.x;
 	pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
+
+	//地图的引入
+	FILE *fp = NULL;
+	if ((fp = fopen("wdp.txt", "r")) != NULL)
+	{
+		int length = 0, width = 0;
+		fscanf(fp, "%d%d", &length, &width);
+		int i = 0, j = 0;
+		for (; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				fscanf(fp, "%d", &mapinfo[i][j]);
+			}
+		}
+
+		//读入地图
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				if (mapinfo[i][j] == 1)
+				{
+					//画地图
+					pObj = gameObjCreate(TYPE_MAP, 1.0f, 0, 0, 0.0f);
+					AE_ASSERT(pObj);
+					pObj->posCurr.y = i * 40 - 400.0f;
+					pObj->posCurr.x = j*15 - 300.0f;
+				}
+			}
+		}
+	}
+	else if ((fp = fopen("wdp.txt", "r")) == NULL)
+	{
+		KeyPressed[KeyESC] = TRUE;
+	}
 
 	// 签到
 	fprintf(fp, "Level2:Initialize\n");
@@ -678,25 +736,18 @@ void Update2(void)
 		//狗的边界控制
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
-			if (pObj->posCurr.x <= winMaxX && pObj->posCurr.x >= winMaxX - 20)
+
+			if (pObj->posCurr.x >= winMaxX || pObj->posCurr.x <= winMinX)
 			{
-				pObj->posCurr.x -= 1.5;
+				pObj->posCurr.x = -pObj->posCurr.x;
 
 			}
-			if (pObj->posCurr.x >= winMinX  && pObj->posCurr.x <= winMinX + 20)
+
+			if (pObj->posCurr.y <= winMinY || pObj->posCurr.y >= winMaxY)
 			{
-				pObj->posCurr.x += 1.5;
+				pObj->posCurr.y = -pObj->posCurr.y;
 			}
-			if (pObj->posCurr.y <= winMinY + 20 && pObj->posCurr.y >= winMinY)
-			{
-				pObj->posCurr.y += 1.5;
-			}
-			if (pObj->posCurr.y >= winMaxY - 20 && pObj->posCurr.y <= winMaxY)
-			{
-				pObj->posCurr.y -= 1.5;
-			}
-			//pObj->posCurr.x += pObj->velCurr.x;
-			//pObj->posCurr.y += pObj->velCurr.y;
+
 
 
 			//是否与狗发生碰撞
@@ -733,44 +784,81 @@ void Update2(void)
 				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
 			}
 		}
+
+	}//for
+
+	//狗运动
+	for (int a = 0; a < 5; a++)
+	{
+		srand(time());
+		int PosDogX = (pDog[a]->posCurr.x + 400) / 40;
+		int PosDogY = (pDog[a]->posCurr.y + 300) / 15;
+		if (mapinfo[PosDogX - 1][PosDogY] == 0)
+		{
+			pDog[a]->posCurr.x -= 1;
+		}
+		else if (mapinfo[PosDogX + 1][PosDogY] == 0)
+		{
+			pDog[a]->posCurr.x += 1;
+		}
+
+		else if (mapinfo[PosDogX][PosDogY + 1] == 0)
+		{
+			pDog[a]->posCurr.y += 1;
+		}
+		else  if (mapinfo[PosDogX][PosDogY - 1] == 0)
+		{
+			pDog[a]->posCurr.y -= 1;
+		}
+		//else
+		//{
+		//	pDog[a]->posCurr.x += 2;
+		//}
 	}
+	
 	//狗的运动
 	TimeTot1++;
+	int x;
 	if (TimeTot1 < 300)
 	{
-		pDog[0]->posCurr.x += 1.5;
-		pDog[1]->posCurr.x -= 1.5;
-		pDog[2]->posCurr.y += 1.5;
-		pDog[3]->posCurr.y -= 1.5;
-		pDog[4]->posCurr.x += 1.5;
+		
+		pDog[0]->posCurr.x += 1;
+		pDog[1]->posCurr.x -= 1;
+		pDog[2]->posCurr.y += 1;
+		pDog[3]->posCurr.y -= 1;
+		pDog[4]->posCurr.x += 1;
 	}
 	if (TimeTot1 >= 300 && TimeTot1 < 600)
 	{
-		pDog[0]->posCurr.x -= 1.5;
-		pDog[1]->posCurr.x += 1.5;
-		pDog[2]->posCurr.y -= 1.5;
-		pDog[3]->posCurr.y += 1.5;
-		pDog[4]->posCurr.x -= 1.5;
+		pDog[0]->posCurr.x -= 1;
+		pDog[1]->posCurr.x += 1;
+		pDog[2]->posCurr.y -= 1;
+		pDog[3]->posCurr.y += 1;
+		pDog[4]->posCurr.y -= 1;
 	}
 	if (TimeTot1 >= 600 && TimeTot1 < 900)
 	{
-		pDog[0]->posCurr.y += 1.5;
-		pDog[1]->posCurr.y -= 1.5;
-		pDog[2]->posCurr.x += 1.5;
-		pDog[3]->posCurr.x -= 1.5;
-		pDog[4]->posCurr.y += 1.5;
+		pDog[0]->posCurr.y += 1;
+		pDog[1]->posCurr.y -= 1;
+		pDog[2]->posCurr.x += 1;
+		pDog[3]->posCurr.x -= 1;
+		pDog[4]->posCurr.y += 1;
 	}
 	if (TimeTot1 >= 900 && TimeTot1 < 1200)
 	{
-		pDog[0]->posCurr.y -= 1.5;
-		pDog[1]->posCurr.y += 1.5;
-		pDog[2]->posCurr.x -= 1.5;
-		pDog[3]->posCurr.x += 1.5;
-		pDog[4]->posCurr.y -= 1.5;
+		pDog[0]->posCurr.y -= 1;
+		pDog[1]->posCurr.y += 1;
+		pDog[2]->posCurr.x -= 1;
+		pDog[3]->posCurr.x += 1;
+		pDog[4]->posCurr.y -= 1;
 	}
 	if (TimeTot1 == 1200)
+	{
 		TimeTot1 = 0;
-	//按空格键
+	}
+	
+	
+		//按空格键
 	if (KeyPressed[KeySpace])
 	{
 
@@ -967,9 +1055,28 @@ void Draw2(void)
 			//AEGfxSetTransparency(1);
 			//AEGfxSetBlendColor(1.0f, 1.0f, 1.0, 1.0f);
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}//if
+
+		//画地图对象
+		if (pInst->pObject->type == TYPE_MAP)
+		{
+			//if (KeyPressed[KeySpace])
+			//	{
+			// Drawing object stone
+			// Set position for object stone
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+			//AEGfxSetPosition(Burglar->posCurr.x+100.0f, Burglar->posCurr.y+10.0f);
+			// Set texture for object stone
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			AEGfxTextureSet(pTexMap, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			// Drawing the mesh (list of triangles)
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+			//}
 		}
 
-	}
+	}//for
 	// 签到
 	fprintf(fp, "Level2:Draw\n");
 }

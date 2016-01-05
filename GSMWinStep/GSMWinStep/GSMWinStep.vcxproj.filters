@@ -163,5 +163,23 @@
     <Image Include="PlayerRun.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="map.png">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="Burglar_lives1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Burglar_lives2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Burglar_lives3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="full_live_boss.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="half_live_boss.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

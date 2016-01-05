@@ -131,7 +131,13 @@
   <ItemGroup>
     <Image Include="..\..\..\游戏c文件\GProj_Asteroid\GProj_Asteroid\PlanetTexture.png" />
     <Image Include="BackGround.PNG" />
+    <Image Include="Burglar_lives1.png" />
+    <Image Include="Burglar_lives2.png" />
+    <Image Include="Burglar_lives3.png" />
     <Image Include="Dog1.png" />
+    <Image Include="full_live_boss.png" />
+    <Image Include="half_live_boss.png" />
+    <Image Include="map.png" />
     <Image Include="MonkeyStand.png" />
     <Image Include="MonkeyWalk.png" />
     <Image Include="PlayerRun.png" />

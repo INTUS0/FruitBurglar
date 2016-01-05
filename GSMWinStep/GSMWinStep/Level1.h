@@ -41,7 +41,9 @@ enum OBJ_TYPE
 #define TYPE_BOSSBLOOD 9
 #define TYPE_BURGLARBLOOD 10
 #define TYPE_BURGLARLIVES 11
-#define TYPE_NUM 12
+#define TYPE_MAP 12
+#define TYPE_BURGLARSCORES 13
+#define TYPE_NUM 14
 
 //------------------------------------------------------------------------------
 // Public Structures

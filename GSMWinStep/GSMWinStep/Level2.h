@@ -26,7 +26,8 @@
 #define TYPE_BOSSBLOOD 9
 #define TYPE_BURGLARBLOOD 10
 #define TYPE_BURGLARLIVES 11
-#define TYPE_NUM 12
+#define TYPE_MAP 12
+#define TYPE_NUM 13
 
 //------------------------------------------------------------------------------
 // Public Structures:

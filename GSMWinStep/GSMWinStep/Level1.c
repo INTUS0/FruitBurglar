@@ -22,7 +22,7 @@ Purpose:		关卡1  */
 // Private Consts:
 //------------------------------------------------------------------------------
 #define GAME_OBJ_BASE_NUM_MAX	32			// 对象类型（对象基类）数目上限
-#define GAME_OBJ_NUM_MAX		2048		// 对象数目上限
+#define GAME_OBJ_NUM_MAX		4096		// 对象数目上限
 
 #define BURGLAR_INITIAL_NUM			3		// 主角的lives数目
 #define FRUIT_NUM				3		// 水果数目
@@ -32,7 +32,8 @@ Purpose:		关卡1  */
 
 #define FLAG_ACTIVE					0x00000001  // 活动对象标志
 
-//------------------------------------------------------------------------------
+#define CollisionMin                5   //地图中大于5的位置均不能通过   
+//--------------------------------------------------------------------------------
 // Private Structures:
 //------------------------------------------------------------------------------
 
@@ -52,10 +53,17 @@ typedef struct
 	Vector2D           posCurr;     //当前位置
 	Vector2D           velCurr;     //当前速度
 	float              dirCurr;     //当前方向
+	AEGfxTexture        *pTex;      //纹理
 
 	Matrix2D           transform;   //变换矩阵，每一帧都需要为一个对象计算
 }GameObj;
 
+
+//方块图类
+typedef struct Mapdata{
+	int **mapData, **CollisionData;//地图数据和碰撞数据
+	int BINARY_MAP_HEIGHT, BINARY_MAP_WIDTH;//地图的高和宽
+}Map;
 
 //private variables
 // 游戏对象基类（类型）列表
@@ -78,8 +86,13 @@ static GameObj* pTrap;
 
 //农场主对象
 static GameObj* pBoss;
-//狗
+//狗对象
 static GameObj* pDog[5];
+//地图对象
+static GameObj* Level1_Map;
+
+
+
 //小盗血量
 static int BurglarBlood;
 static unsigned long sScore; //捡到的水果数
@@ -90,6 +103,10 @@ static int Fruit_NUM = 0;
 static int TimeTot = 0;
 //临时定义狗运动时间
 static int TimeTot1 = 0;
+
+//BOSS运行标记
+static int BossDirectionX = 0;
+static int BossDirectionY = 0;
 
 
 //狗数量
@@ -117,12 +134,20 @@ static float obj1X, obj1Y;		// 对象burglar的位置
 static AEGfxTexture *pTex2;		//对象dog的纹理
 static AEGfxTexture *pTexStone; //移动石头纹理
 static AEGfxTexture *pTexTrap; //陷阱纹理
+static AEGfxTexture *pTexMap;	//对象Map的纹理
+static AEGfxTexture *pTex_Bossblood;		//BOSS血量的纹理
+
+static float MapX, MapY;		// 对象Map的位置
 //------------------------------------------------------------------------------
 // Private Function Declarations:
 //------------------------------------------------------------------------------
 // 创建/删除游戏对象
 static GameObj*		gameObjCreate(unsigned long type, float scale, Vector2D* pPos, Vector2D* pVel, float dir);
 static void			gameObjDestroy(GameObj* pInst);
+
+//地图读取及地图坐标转换
+static void mapLoad(Map* pMap);
+static void MapTransform(GameObj* pInst, int MAP_WIDTH, int MAP_HEIGHT);
 
 //------------------------------------------------------------------------------
 // Public Functions:
@@ -361,6 +386,42 @@ void Load1(void)
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
+	// =====================
+	//地图
+	// =====================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_MAP;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-450.0f, -300.0f, 0x00FF00FF, 0.0f, 1.0f,
+		450.0f, -300.0f, 0x00FFFF00, 1.0f, 1.0f,
+		-450.0f, 300.0f, 0x00F00FFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		450.0f, -300.0f, 0x00FFFFFF, 1.0f, 1.0f,
+		450.0f, 300.0f, 0x00FFFFFF, 1.0f, 0.0f,
+		-450.0f, 300.0f, 0x00FFFFFF, 0.0f, 0.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create object!!");
+	pTexMap = AEGfxTextureLoad("map.png");
+	// ========================
+	// 小盗分数：两个三角形拼接的长方形
+	// ========================
+	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
+	pObjBase->type = TYPE_BURGLARSCORES;
+
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-30.0f, 4.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
+		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
+		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
+	AEGfxTriAdd(
+		30.0f, -4.0f, 0x01FF0000, 1.0f, 1.0f,
+		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,
+		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);
+	pObjBase->pMesh = AEGfxMeshEnd();
+	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+
 	// 签到
 	fprintf(fp, "Level1:Load\n");
 
@@ -380,14 +441,20 @@ void Ini1(void)
 	TimeTot1 = 0;
 	
 
-	// 对象1的初始位置
+	// 主角的初始位置
 	obj1X = 0.0f;
 	obj1Y = 0.0f;
+	//地图的初始位置
+	MapX = 0.0f;
+	MapY = 0.0f;
+
 	memset(sGameObjList, 0, sizeof(GameObj)*GAME_OBJ_NUM_MAX);
 	GameObj* pObj;
 	int i;
 
 	BossBlood = 2;      //初始化BOSS血量
+	pTex_Bossblood = AEGfxTextureLoad("full_live_boss.png");  //载入boss血量纹理
+
 
 	// 为开始画对象做准备
 	AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
@@ -464,8 +531,8 @@ void Ini1(void)
 		switch (i)
 		{
 		case 0:
-			pObj->posCurr.x = AEGfxGetWinMaxX() - 30;
-			pObj->posCurr.y = -100.0f;
+			pObj->posCurr.x = AEGfxGetWinMaxX() - 60;
+			pObj->posCurr.y = -150.0f;
 			//pObj->velCurr.x = 2.0f;
 			//pObj->velCurr.y = 2.0f;
 			break;
@@ -476,14 +543,14 @@ void Ini1(void)
 			//pObj->velCurr.y = -2.0f;
 			break;
 		case 2:
-			pObj->posCurr.x = AEGfxGetWinMinX() + 30;
-			pObj->posCurr.y = -50.0f;
+			pObj->posCurr.x = AEGfxGetWinMinX() + 60;
+			pObj->posCurr.y = -100.0f;
 			//pObj->velCurr.x = 1.5f;
 			//pObj->velCurr.y = -1.5f;
 			break;
 		case 3:
 			pObj->posCurr.x = 200.0f;
-			pObj->posCurr.y = AEGfxGetWinMaxY() - 40;
+			pObj->posCurr.y = AEGfxGetWinMaxY() - 80;
 			//pObj->velCurr.x = -3.0f;
 			//pObj->velCurr.y = 2.0f;
 			break;
@@ -514,46 +581,31 @@ void Ini1(void)
 	//初始化血量位置
 	pObj->posCurr.x = Burglar->posCurr.x;
 	pObj->posCurr.y = Burglar->posCurr.y + 35.0f;
-
 	
-	/*
-	//地图的引入
-	FILE *fp = NULL;
-	int mapinfo[50][50];//
-	if ((fp = fopen("wdp.txt", "r")) != NULL)
-	{
-		int length = 0, width = 0;
-		fscanf(fp, "%d%d", &length, &width);
-		int i = 0, j = 0;
-		for (; i != length; i++)
-		{
-			for (j = 0; j != width; j++)
-			{
-				fscanf(fp, "%d", &mapinfo[i][j]);
-			}
-		}
-		
-		//读入地图
-		for (i = 0; i != length; i++)
-		{
-			for (j = 0; j != width; j++)
-			{
-				if (mapinfo[i][j] == 1)
-				{
-					//画地图
-					pObj = gameObjCreate(TYPE_STONE_STATIC, 2.0f, 0, 0, 0.0f);
-					AE_ASSERT(pObj);
-					pObj->posCurr.x = i / 20.0f + 20.0f;
-					pObj->posCurr.y = -j/20.0f + 10.0f;
-				}
-			}
-		}
-	}
-	else if ((fp = fopen("wdp.txt", "r")) == NULL)
-	{
-		KeyPressed[KeyESC] = TRUE;
-	}
-	*/
+	//主角命数初始化
+	pObj = gameObjCreate(TYPE_BURGLARLIVES, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化生命数显示位置
+	pObj->posCurr.x = AEGfxGetWinMinX() + 40.0f;
+	pObj->posCurr.y = AEGfxGetWinMaxY() - 15.0f;
+	pObj->pTex = AEGfxTextureLoad("Burglar_lives1.png");
+
+	//初始化主角分数
+	pObj = gameObjCreate(TYPE_BURGLARSCORES, 10.0f, 0, 0, 0.0f);
+	AE_ASSERT(pObj);
+	//初始化生命数显示位置
+	pObj->posCurr.x = AEGfxGetWinMinX() + 40.0f;
+	pObj->posCurr.y = AEGfxGetWinMaxY() - 45.0f;
+
+	// 地图对象实例化
+	Level1_Map = gameObjCreate(TYPE_MAP, 1.0f, 0, 0, 0.0f);
+	AE_ASSERT(Level1_Map);
+	Level1_Map->posCurr.x = AEGfxGetWinMaxX();
+	Level1_Map->posCurr.y = 100.0f;
+
+	Level1_Map->dirCurr = acosf(Level1_Map->posCurr.x / ((float)sqrt(Level1_Map->posCurr.x*Level1_Map->posCurr.x + Level1_Map->posCurr.y * Level1_Map->posCurr.y))) - PI;
+	Level1_Map->scale = 1.0f;
+
 }
 
 void Update1(void)
@@ -686,12 +738,25 @@ void Update1(void)
 			{
 
 				GameObj* pObj0 = sGameObjList + j;
-				if (pObj0->flag && (pObj0->pObject->type == TYPE_DOG || pObj0->pObject->type == TYPE_BOSS))
+				if (pObj0->flag && pObj0->pObject->type == TYPE_BOSS)
 				{
 					if (StaticPointToStaticCircle(&pObj->posCurr, &pObj0->posCurr, 10.0))
 					{
-						gameObjDestroy(pObj0);
 						gameObjDestroy(pObj);
+						BossBlood--;
+						pTex_Bossblood = AEGfxTextureLoad("half_live_boss.png");  //载入boss血量纹理
+					}
+					if (BossBlood <= 0)
+					{
+						gameObjDestroy(pObj0);
+					}
+				}
+				else if (pObj0->flag && pObj0->pObject->type == TYPE_DOG)
+				{
+					if (StaticPointToStaticCircle(&pObj->posCurr, &pObj0->posCurr, 10.0))
+					{
+						gameObjDestroy(pObj);
+						gameObjDestroy(pObj0);
 					}
 				}
 			}
@@ -742,51 +807,100 @@ void Update1(void)
 		//Boss 的运动跟碰撞
 		if (pObj->flag && pObj->pObject->type == TYPE_BOSS)
 		{
-			pObj->velCurr.x = Burglar->posCurr.x - pObj->posCurr.x / 20.0f;
-			pObj->velCurr.y = Burglar->posCurr.y - pObj->posCurr.y / 20.0f;
+			
+			if (Burglar->flag&FLAG_ACTIVE && ((pObj->posCurr.x - Burglar->posCurr.x)*(pObj->posCurr.x - Burglar->posCurr.x) + (pObj->posCurr.y - Burglar->posCurr.y)*(pObj->posCurr.y - Burglar->posCurr.y)) < 50000.0f)
+				{
 
-			if (pObj->posCurr.x == Burglar->posCurr.x)
+					pObj->velCurr.x = (Burglar->posCurr.x - pObj->posCurr.x) / 2.0f;
+					pObj->velCurr.y = (Burglar->posCurr.y - pObj->posCurr.y) / 2.0f;
+
+					if (pObj->posCurr.x == Burglar->posCurr.x)
+					{
+						pObj->velCurr.y = 0.0f;
+					}
+					if (pObj->posCurr.y == Burglar->posCurr.y)
+					{
+						pObj->velCurr.x = 0.0f;
+					}
+					//农场主跟着主角移动
+					pObj->posCurr.x += pObj->velCurr.x / 50.0f;
+					pObj->posCurr.y += pObj->velCurr.y / 50.0f;
+				}//if
+			
+			else
 			{
-				pObj->velCurr.y = 1.0f;
-			}
-			if (pObj->posCurr.y == Burglar->posCurr.y)
-			{
-				pObj->velCurr.x = 1.0f;
-			}
-			//农场主跟着主角移动
-			pObj->posCurr.x += pObj->velCurr.x / 100.0f;
-			pObj->posCurr.y += pObj->velCurr.y / 100.0f;
+				if (BossDirectionX == 0)//在到达最大x前，往正方向运动
+				{
+					if (pObj->posCurr.x <= 400.0f)
+					{
+						pObj->posCurr.x += 1.5;
+					}
+					else if (pObj->posCurr.x >= 400.0f)
+					{
+						BossDirectionX = 1;
+					}
+				}
+				else if (BossDirectionX == 1)//达到最小x前往负方向运动
+				{
+					if (pObj->posCurr.x >= -400.0f)
+					{
+						pObj->posCurr.x -= 1.5;
+					}
+					
+					else 
+					{
+						BossDirectionX = 0;
+					}
+				}
+
+				if (BossDirectionY == 0)//最大y前往上
+				{
+					if (pObj->posCurr.y <= 300.0f)
+					{
+						pObj->posCurr.y += 1.5;
+					}
+					else if (pObj->posCurr.y >= 300.0f)
+					{
+						BossDirectionY = 1;
+					}
+				}
+				else if (BossDirectionY == 1)//最小y前往下运动
+				{
+					if (pObj->posCurr.y >= -300.0f)
+					{
+						pObj->posCurr.y -= 1.5;
+					}
+					else 
+					{
+						BossDirectionY = 0;
+					}
+				}
+
+			}//else
 
 
 			//发生碰撞，主角死亡
 			if (StaticRectToStaticRect(&Burglar->posCurr, 15.0f, 15.0f, &pObj->posCurr, 15.0f, 15.0f))
 			{
 				gameObjDestroy(Burglar);
+				Matrix2DScale(&pObj->transform, 0.5, 1);
 			}
 		}
 
 		//狗的边界控制
 		if (pObj->flag&&pObj->pObject->type == TYPE_DOG)
 		{
-			if (pObj->posCurr.x <= winMaxX && pObj->posCurr.x >= winMaxX - 20)
+			if (pObj->posCurr.x > winMaxX || pObj->posCurr.x < winMinX)
 			{
-				pObj->posCurr.x -= 1.5;
+				pObj->posCurr.x = -pObj->posCurr.x;
 
 			}
-			if (pObj->posCurr.x >= winMinX  && pObj->posCurr.x <= winMinX + 20)
+			
+			if (pObj->posCurr.y < winMinY || pObj->posCurr.y > winMaxY)
 			{
-				pObj->posCurr.x += 1.5;
+				pObj->posCurr.y = -pObj->posCurr.y;
 			}
-			if (pObj->posCurr.y <= winMinY + 20 && pObj->posCurr.y >= winMinY)
-			{
-				pObj->posCurr.y += 1.5;
-			}
-			if (pObj->posCurr.y >= winMaxY - 20 && pObj->posCurr.y <= winMaxY)
-			{
-				pObj->posCurr.y -= 1.5;
-			}
-			//pObj->posCurr.x += pObj->velCurr.x;
-			//pObj->posCurr.y += pObj->velCurr.y;
+			
 
 
 			//是否与狗发生碰撞
@@ -811,6 +925,16 @@ void Update1(void)
 			}
 		}
 
+		//捡到草莓
+		if (pObj->flag&&pObj->pObject->type == TYPE_STRAWBERRY)
+		{
+			if (StaticPointToStaticCircle(&Burglar->posCurr, &pObj->posCurr, 10.0))
+			{
+				gameObjDestroy(pObj);
+				Fruit_NUM -= 1;
+				sScore += 5;
+			}
+		}
 
 		if (pObj->flag && pObj->pObject->type == TYPE_BURGLARBLOOD)
 		{
@@ -822,8 +946,17 @@ void Update1(void)
 			{
 				gameObjDestroy(pObj);   //销毁主角的同时，销毁主角的血量 
 			}
-		}	
-	}
+		}
+
+		if (pObj->flag && pObj->pObject->type == TYPE_BOSSBLOOD)
+		{
+			//更新主角血量位置
+			pObj->posCurr.x = pBoss->posCurr.x;
+			pObj->posCurr.y = pBoss->posCurr.y + 35.0f;
+		}
+
+	}//for
+
 	//狗的运动
 	TimeTot1++;
 	if (TimeTot1 < 300)
@@ -876,6 +1009,20 @@ void Update1(void)
 void Draw1(void)
 {
 	unsigned long i;
+
+	//单独画地图
+	if (Level1_Map->flag&FLAG_ACTIVE)
+	{
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);   // 必须最先设置绘制模式为纹理
+		AEGfxSetPosition(0.0f, 0.0f);
+		// Set texture for object background
+		AEGfxTextureSet(pTexMap, 0.0f, 0.0f); // 参数1：纹理，偏移量(x,y)
+		AEGfxSetTransparency(1.0f);
+		AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+		// Drawing the mesh (list of triangles)
+		AEGfxMeshDraw(Level1_Map->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+	}
+
 
 	// 画主角，单独画
 	if (Burglar->flag& FLAG_ACTIVE)
@@ -1012,6 +1159,21 @@ void Draw1(void)
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 		}
 
+		//创建BOSS血量对象
+		if (pInst->pObject->type == TYPE_BOSSBLOOD)
+		{
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			// 设置血量的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 纹理
+			AEGfxTextureSet(pTex_Bossblood, 0.0f, 0.0f);
+			// 画血量
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
 		//绘制狗对象
 		if (pInst->pObject->type == TYPE_DOG)
 		{
@@ -1057,6 +1219,34 @@ void Draw1(void)
 			// 画对象西瓜
 			//AEGfxSetTransparency(1);
 			//AEGfxSetBlendColor(1.0f, 1.0f, 1.0, 1.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
+		if (pInst->pObject->type == TYPE_BURGLARLIVES)
+		{  //创建小盗生命数
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			// 设置小盗生命数的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 纹理
+			AEGfxTextureSet(pInst->pTex, 0.0f, 0.0f);
+			// 画生命数
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
+			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
+		}
+
+		if (pInst->pObject->type == TYPE_BURGLARSCORES)
+		{  //创建小盗分数
+			// 设置绘制模式(Color or texture)
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			// 设置小盗分数的坐标位置
+			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
+			// 纹理
+			AEGfxTextureSet(NULL, 0.0f, 0.0f);
+			// 画分数
+			AEGfxSetTransparency(1.0f);
+			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);
 			AEGfxMeshDraw(pInst->pObject->pMesh, AE_GFX_MDM_TRIANGLES);
 		}
 		
@@ -1131,4 +1321,77 @@ void gameObjDestroy(GameObj* pInst)
 
 	// 销毁
 	pInst->flag = 0;
+}
+
+void mapLoad(Map* pMap)//地图读取
+{
+	FILE *fp;
+	char c;
+	int* H, *W;
+	int i, j;
+	if ((fp = fopen("map.txt", "r")) == NULL)
+	{
+		printf("Error opening data file\n");
+		exit(-1);
+	}
+	H = (int *)malloc(sizeof(int));
+	fscanf(fp, "%d", H);//读高度
+	W = (int *)malloc(sizeof(int));
+	fscanf(fp, "%d", W);//读宽度
+	pMap->BINARY_MAP_HEIGHT = *H;
+	pMap->BINARY_MAP_WIDTH = *W;
+	//printf("%d\n", pMap->BINARY_MAP_HEIGHT);
+	//printf("%d\n", pMap->BINARY_MAP_WIDTH);
+	(pMap->mapData) = (int **)malloc((pMap->BINARY_MAP_HEIGHT)* sizeof(int *));
+	for (i = 0; i < pMap->BINARY_MAP_WIDTH; ++i)
+		pMap->mapData[i] = (int *)malloc((pMap->BINARY_MAP_WIDTH)* sizeof(int *));
+	(pMap->CollisionData) = (int **)malloc((pMap->BINARY_MAP_HEIGHT)* sizeof(int *));
+	for (i = 0; i < pMap->BINARY_MAP_WIDTH; ++i)
+		pMap->CollisionData[i] = (int *)malloc((pMap->BINARY_MAP_WIDTH)* sizeof(int *));
+	for (i = pMap->BINARY_MAP_HEIGHT - 1; i >= 0; --i)
+	{
+		for (j = 0; j < pMap->BINARY_MAP_WIDTH; ++j)//读mapdata
+		{
+			if (isdigit(c = fgetc(fp)))
+				ungetc(c, fp);
+			fscanf(fp, "%d", &(pMap->mapData[i][j]));
+			//printf("%d\t", pMap->mapData[i][j]);
+		}
+	}
+	for (i = 0; i < pMap->BINARY_MAP_HEIGHT; i++)
+		for (j = 0; j < pMap->BINARY_MAP_WIDTH; j++)
+		{
+			if (pMap->mapData[i][j] > CollisionMin)//如果大于边界碰撞检测数值
+				pMap->CollisionData[i][j] = 0;//设置collisiondata为零
+			else pMap->CollisionData[i][j] = pMap->mapData[i][j];
+		}
+}
+
+/*void MapTransform(GameObj* pInst, int MAP_WIDTH, int MAP_HEIGHT)//地图位置计算
+{
+//中间变量
+Matrix2D mapTrans;
+Matrix2D mapScale;
+Matrix2D mapTransform;
+
+//地图变换矩阵的计算
+Matrix2DIdentity(&mapTrans);
+Matrix2DTranslate(&mapTrans, -MAP_WIDTH / 2.f, -MAP_HEIGHT / 2.f);
+Matrix2DIdentity(&mapScale);
+Matrix2DScale(&mapScale, 20, 20);
+Matrix2DConcat(&mapTransform, &mapScale, &mapTrans);
+}*/
+
+int WorldTransToMapdata(Map *pMap, Vector2D *pVec)
+{
+	//单元格大小计算
+	float HEIGHT = 600.0f / (pMap->BINARY_MAP_HEIGHT);
+	float WIDTH = 800.0f / (pMap->BINARY_MAP_WIDTH);
+
+	//计算世界坐标在地图坐标中的位置
+	int   MapdataX = (pVec->x + 400.0f) / WIDTH;
+	int   MapdataY = (-pVec->y + 300.0f) / HEIGHT;
+
+	//返回碰撞数据
+	return (pMap->CollisionData[MapdataX][MapdataY]);
 }
