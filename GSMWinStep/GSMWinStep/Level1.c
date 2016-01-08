@@ -376,13 +376,13 @@ void Load1(void)
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
-		-30.0f, 4.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
-		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
-		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
+		-15.0f, 8.0f, 0x01FF0000, 0.0f, 0.0f,    //0x01FF0000 黑色
+		15.0f, 8.0f, 0xFFFF0000, 1.0f, 0.0f,   //0xFFFF0000 红色
+		-15.0f, -8.0f, 0xFFFFFFFF, 0.0f, 1.0f);   //0xFFFFFFFF 白色
 	AEGfxTriAdd(
-		30.0f, -4.0f, 0x01FF0000, 1.0f, 1.0f,
-		30.0f, 4.0f, 0xFFFF0000, 1.0f, 0.0f,
-		-30.0f, -4.0f, 0xFFFFFFFF, 0.0f, 1.0f);
+		15.0f, -8.0f, 0x01FF0000, 1.0f, 1.0f,
+		15.0f, 8.0f, 0xFFFF0000, 1.0f, 0.0f,
+		-15.0f, -8.0f, 0xFFFFFFFF, 0.0f, 1.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
 
@@ -1027,9 +1027,16 @@ void Draw1(void)
 	// 画主角，单独画
 	if (Burglar->flag& FLAG_ACTIVE)
 	{
+		if (obj1X > 400 || obj1X < -400)
+		{
+			obj1X = -obj1X;
+		}
+		if (obj1Y > 300 || obj1Y < -300)
+		{
+			obj1Y = -obj1Y;
+		}
 		//主角移动帧率时间
 		float frameTime = AEFrameRateControllerGetFrameTime()*10.0f;
-
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEGfxSetPosition(obj1X, obj1Y);
 		AEGfxTextureSet(pTex1, obj1X, obj1Y);//设置猴子位置

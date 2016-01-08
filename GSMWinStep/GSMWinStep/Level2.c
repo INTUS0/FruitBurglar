@@ -15,6 +15,7 @@ Purpose:		关卡2  */
 #include "Vector2D.h"
 #include "Math2D.h"
 #include <Windows.h>
+
 //------------------------------------------------------------------------------
 // Private Consts:
 //------------------------------------------------------------------------------
@@ -80,8 +81,10 @@ static GameObj* pTrap;
 
 //农场主对象
 static GameObj* pBoss;
-//狗
+//狗跟狗运动标志
 static GameObj* pDog[5];
+static int MoveFlag[5] = {1,1,1,1,1};
+
 
 static AEGfxTexture *pTexMap;		//对象Map的纹理
 
@@ -118,6 +121,8 @@ static float obj1X, obj1Y;		// 对象burglar的位置
 static AEGfxTexture *pTex2;		//对象dog的纹理
 static AEGfxTexture *pTexStone; //移动石头纹理
 static AEGfxTexture *pTexTrap; //陷阱纹理
+static AEGfxTexture *pTexBoss;//boss纹理
+
 
 int mapinfo[50][50];//地图数组
 
@@ -217,7 +222,7 @@ void Load2(void)
 
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
-	pTexTrap = AEGfxTextureLoad("planetTexture.png");; //陷阱纹理
+	pTexTrap = AEGfxTextureLoad("trap.png");; //陷阱纹理
 
 	//看不见的陷阱
 	pObjBase = sGameObjBaseList + sGameObjBaseNum++;
@@ -252,6 +257,7 @@ void Load2(void)
 		-20.0f, 20.0f, 0x00FFFFFF, 0.0f, 0.0f);
 	pObjBase->pMesh = AEGfxMeshEnd();
 	AE_ASSERT_MESG(pObjBase->pMesh, "Failed to create Asteroid object!!");
+	pTexBoss = AEGfxTextureLoad("MonkeyStand.png");; //boss
 
 	// ========================
 	// 狗：两个三角形拼接的菱形
@@ -465,8 +471,8 @@ void Ini2(void)
 	pBoss = gameObjCreate(TYPE_BOSS, 10.0f, 0, 0, 0.0f);
 	AE_ASSERT(pBoss);
 	//初始化农场主位置及朝向比例
-	pBoss->posCurr.x = 100.0f;
-	pBoss->posCurr.y = 100;
+	pBoss->posCurr.x = 60.0f;
+	pBoss->posCurr.y = 70;
 	pBoss->dirCurr = acosf(pBoss->posCurr.x / ((float)sqrt(pBoss->posCurr.x*pBoss->posCurr.x + pBoss->posCurr.y * pBoss->posCurr.y))) - PI;
 	pBoss->scale = 10.0f;
 
@@ -477,8 +483,8 @@ void Ini2(void)
 		pObj = gameObjCreate(TYPE_DOG, 10.0f, 0, 0, 0.0f);
 		pDog[i] = pObj;//给狗分配指针
 		AE_ASSERT(pObj);
-		pObj->posCurr.x = 100.0f;
-		pObj->posCurr.y = 100.0f;
+		pObj->posCurr.x = 60.0f;
+		pObj->posCurr.y = 70.0f;
 		
 		pObj->dirCurr = acosf(pObj->posCurr.x / ((float)sqrt(pObj->posCurr.x*pObj->posCurr.x + pObj->posCurr.y * pObj->posCurr.y))) - PI;
 
@@ -525,8 +531,8 @@ void Ini2(void)
 					//画地图
 					pObj = gameObjCreate(TYPE_MAP, 1.0f, 0, 0, 0.0f);
 					AE_ASSERT(pObj);
-					pObj->posCurr.y = i * 40 - 400.0f;
-					pObj->posCurr.x = j*15 - 300.0f;
+					pObj->posCurr.x = j*20 - 400.0f;
+					pObj->posCurr.y = i*20 - 300.0f;
 				}
 			}
 		}
@@ -576,24 +582,33 @@ void Update2(void)
 
 
 	// 主角的移动
+	int BurglarPosj = (obj1X + 400) / 20;
+	int BurglarPosi = (obj1Y + 300) / 20;
 	if (KeyPressed[KeyUp])
 	{
-		obj1Y += 20.0f;
-
+		if (mapinfo[BurglarPosi+1][BurglarPosj]);
+		else
+		    obj1Y += 20.0f;
 	}
 	else
 		if (KeyPressed[KeyDown])
 		{
+			if (mapinfo[BurglarPosi-1][BurglarPosj]);
+			else
 			obj1Y -= 20.0f;
 		}
 	if (KeyPressed[KeyLeft])
 	{
-		obj1X -= 20.0f;
+		if (mapinfo[BurglarPosi][BurglarPosj-1]);
+		else
+		    obj1X -= 20.0f;
 	}
 	else
 		if (KeyPressed[KeyRight])
 		{
-			obj1X += 20.0f;
+			if (mapinfo[BurglarPosi][BurglarPosj+1]);
+			else
+			    obj1X += 20.0f;
 		}
 
 	//鼠标左键控制石头生成
@@ -789,32 +804,15 @@ void Update2(void)
 	}//for
 
 	//狗运动
-	for (int a = 0; a < 5; a++)
+	for (int a = 0; a < 3; a++)
 	{
 		srand(time());
-		int PosDogX = (pDog[a]->posCurr.x + 400) / 40;
-		int PosDogY = (pDog[a]->posCurr.y + 300) / 15;
-		if (mapinfo[PosDogX - 1][PosDogY])
+		int PosDogX = (pDog[a]->posCurr.x + 400) / 20;
+		int PosDogY = (pDog[a]->posCurr.y + 300) / 20;
+		if (mapinfo[PosDogX][PosDogY])
 		{
-			pDog[a]->posCurr.x += 1;
+			MoveFlag[a] = 0;
 		}
-		else if (mapinfo[PosDogX + 1][PosDogY])
-		{
-			pDog[a]->posCurr.x -= 1;
-		}
-
-		else if (mapinfo[PosDogX][PosDogY + 1])
-		{
-			pDog[a]->posCurr.y -= 1;
-		}
-		else  if (mapinfo[PosDogX][PosDogY - 1])
-		{
-			pDog[a]->posCurr.y += 1;
-		}
-		//else
-		//{
-		//	pDog[a]->posCurr.x += 2;
-		//}
 	}
 	
 	//狗的运动
@@ -831,27 +829,28 @@ void Update2(void)
 	}
 	if (TimeTot1 >= 300 && TimeTot1 < 600)
 	{
-		pDog[0]->posCurr.x -= 1;
-		pDog[1]->posCurr.x += 1;
-		pDog[2]->posCurr.y -= 1;
-		pDog[3]->posCurr.y += 1;
-		pDog[4]->posCurr.y -= 1;
+		for (int i = 0; i < 3; i++)
+		{
+			if (MoveFlag[i])
+			{
+				pDog[0]->posCurr.x -= 1;
+				pDog[1]->posCurr.x += 1;
+				pDog[2]->posCurr.y -= 1;
+			}
+		}
+		
 	}
 	if (TimeTot1 >= 600 && TimeTot1 < 900)
 	{
 		pDog[0]->posCurr.y += 1;
 		pDog[1]->posCurr.y -= 1;
 		pDog[2]->posCurr.x += 1;
-		pDog[3]->posCurr.x -= 1;
-		pDog[4]->posCurr.y += 1;
 	}
 	if (TimeTot1 >= 900 && TimeTot1 < 1200)
 	{
 		pDog[0]->posCurr.y -= 1;
 		pDog[1]->posCurr.y += 1;
 		pDog[2]->posCurr.x -= 1;
-		pDog[3]->posCurr.x += 1;
-		pDog[4]->posCurr.y -= 1;
 	}
 	if (TimeTot1 == 1200)
 	{
@@ -1003,7 +1002,7 @@ void Draw2(void)
 			// 设置狗的坐标位置
 			AEGfxSetPosition(pInst->posCurr.x, pInst->posCurr.y);
 			// 无纹理
-			AEGfxTextureSet(pTexStone, 0.0f, 0.0f);
+			AEGfxTextureSet(pTexBoss, 0.0f, 0.0f);
 			// 画对象狗
 			AEGfxSetTransparency(1);
 			AEGfxSetBlendColor(0.0f, 0.0f, 0.0, 0.0f);

@@ -181,5 +181,8 @@
     <Image Include="half_live_boss.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="trap.png">
+      <Filter>Source Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

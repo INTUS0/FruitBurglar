@@ -141,6 +141,7 @@
     <Image Include="MonkeyStand.png" />
     <Image Include="MonkeyWalk.png" />
     <Image Include="PlayerRun.png" />
+    <Image Include="trap.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
