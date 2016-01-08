@@ -1,0 +1,37 @@
+﻿生成启动时间为 2016/1/8 19:57:21。
+     1>项目“E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\GSMWinStep\GSMWinStep.vcxproj”在节点 2 上(Build 个目标)。
+     1>ClCompile:
+         E:\Applications\Visual Studio\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TC /analyze- /errorReport:prompt  /D _CRT_SECURE_NO_WARNINGS Level1.c
+         Level1.c
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(842): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(843): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(865): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(866): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(888): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(889): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(1689): warning C4244: “初始化”: 从“f64”转换到“float”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2134): warning C4047: “return”:“int”与“void *”的间接级别不同
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2120): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2121): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2123): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2124): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+     1>e:\华中科技大学上课\游戏软件开发\游戏开发核心教程\projects\2\周五张腾修改版\gsmwinstep\gsmwinstep\level1.c(2135): warning C4715: “WorldTransToMapdata”: 不是所有的控件路径都返回值
+       Link:
+         E:\Applications\Visual Studio\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\Debug\GSMWinStep.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\Debug\GSMWinStep.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\Debug\GSMWinStep.lib" /MACHINE:X86 Debug\GameStateManager.obj
+         Debug\Input.obj
+         Debug\Level1.obj
+         Debug\Level2.obj
+         Debug\Level3.obj
+         Debug\main.obj
+         Debug\Math2D.obj
+         Debug\Matrix2D.obj
+         Debug\Menu.obj
+         Debug\System.obj
+         Debug\Vector2D.obj
+         Alpha_Engine.lib
+         GSMWinStep.vcxproj -> E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\Debug\GSMWinStep.exe
+     1>已完成生成项目“E:\华中科技大学上课\游戏软件开发\游戏开发核心教程\Projects\2\周五张腾修改版\GSMWinStep\GSMWinStep\GSMWinStep.vcxproj”(Build 个目标)的操作。
+
+已成功生成。
+
+已用时间 00:00:00.99
